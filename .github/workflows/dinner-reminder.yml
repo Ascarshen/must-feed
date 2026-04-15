@@ -1,0 +1,110 @@
+name: Dinner Reminder
+
+on:
+  schedule:
+    # 18:00 in the UK during BST and GMT respectively.
+    - cron: "0 17 * * *"
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  TARGET_USERNAME: XYUnknown
+  ISSUE_TITLE: Daily dinner reminder for Xueyin
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post daily mention
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const eventName = context.eventName;
+            const now = new Date();
+            const london = new Intl.DateTimeFormat("en-GB", {
+              timeZone: "Europe/London",
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hourCycle: "h23",
+            }).formatToParts(now);
+
+            const parts = Object.fromEntries(
+              london
+                .filter((part) => part.type !== "literal")
+                .map((part) => [part.type, part.value]),
+            );
+
+            const localDate = `${parts.year}-${parts.month}-${parts.day}`;
+            const localHour = Number(parts.hour);
+            if (eventName === "schedule" && localHour !== 18) {
+              core.info(`Skipping run outside 18:00 UK time window: ${localHour}:${parts.minute}`);
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issueTitle = process.env.ISSUE_TITLE;
+            const username = process.env.TARGET_USERNAME;
+            const reminderMarker = `<!-- dinner-reminder:${localDate} -->`;
+            const reminderBody = [
+              reminderMarker,
+              `@${username} Xueyin, don't forget dinner.`,
+            ].join("\n");
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: "all",
+              per_page: 100,
+            });
+
+            let reminderIssue = issues.find(
+              (issue) => !issue.pull_request && issue.title === issueTitle,
+            );
+
+            if (!reminderIssue) {
+              const created = await github.rest.issues.create({
+                owner,
+                repo,
+                title: issueTitle,
+                body: [
+                  "This issue is used by the scheduled reminder workflow.",
+                  "It keeps daily dinner reminders for Xueyin in one thread.",
+                ].join("\n\n"),
+                labels: [],
+              });
+              reminderIssue = created.data;
+              core.info(`Created reminder issue #${reminderIssue.number}`);
+            }
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: reminderIssue.number,
+              per_page: 100,
+            });
+
+            const alreadyPosted = comments.some((comment) =>
+              (comment.body || "").includes(reminderMarker),
+            );
+
+            if (alreadyPosted) {
+              core.info(`Reminder already posted for ${localDate}`);
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: reminderIssue.number,
+              body: reminderBody,
+            });
+
+            core.info(`Posted dinner reminder for ${localDate}`);
