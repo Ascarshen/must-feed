@@ -13,7 +13,10 @@ permissions:
 
 env:
   TARGET_USERNAME: XYUnknown
-  ISSUE_TITLE: Daily dinner reminder for Xueyin
+  TARGET_DISPLAY_NAME: Xueying
+  ISSUE_TITLE: Daily dinner reminder for Xueying
+  OPENAI_BASE_URL: https://api.ikuncode.cc
+  OPENAI_MODEL: gpt-5.2
 
 jobs:
   remind:
@@ -21,30 +24,238 @@ jobs:
     steps:
       - name: Post daily mention
         uses: actions/github-script@v7
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
           script: |
             const eventName = context.eventName;
             const now = new Date();
-            const london = new Intl.DateTimeFormat("en-GB", {
-              timeZone: "Europe/London",
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              hourCycle: "h23",
-            }).formatToParts(now);
+            const targetDisplayName = process.env.TARGET_DISPLAY_NAME;
 
-            const parts = Object.fromEntries(
-              london
-                .filter((part) => part.type !== "literal")
-                .map((part) => [part.type, part.value]),
-            );
+            function formatLondonDate(date) {
+              const london = new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Europe/London",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hourCycle: "h23",
+              }).formatToParts(date);
 
-            const localDate = `${parts.year}-${parts.month}-${parts.day}`;
-            const localHour = Number(parts.hour);
+              const parts = Object.fromEntries(
+                london
+                  .filter((part) => part.type !== "literal")
+                  .map((part) => [part.type, part.value]),
+              );
+
+              return {
+                date: `${parts.year}-${parts.month}-${parts.day}`,
+                hour: Number(parts.hour),
+                minute: parts.minute,
+              };
+            }
+
+            function previousLondonDate(localDate) {
+              const noonUtc = new Date(`${localDate}T12:00:00Z`);
+              noonUtc.setUTCDate(noonUtc.getUTCDate() - 1);
+              return formatLondonDate(noonUtc).date;
+            }
+
+            function hasDinnerConfirmation(body) {
+              const text = (body || "").toLowerCase();
+              const confirmationPattern =
+                /\b(done|ate|eaten|fed|dinner|meal|noodles?|rice|soup|pasta|cooked|food|finished)\b|[\u2705\u2611]|(\u5403\u4e86|\u5df2\u5403|\u5403\u996d|\u665a\u996d|\u9762|\u996d|\u7c73\u996d|\u6c64|\u9971)/i;
+              return confirmationPattern.test(text);
+            }
+
+            function compactComment(comment) {
+              const body = (comment.body || "")
+                .replace(/<!--[\s\S]*?-->/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+              const clipped = body.length > 280 ? `${body.slice(0, 277)}...` : body;
+              return {
+                author: comment.user?.login || "unknown",
+                date: formatLondonDate(new Date(comment.created_at)).date,
+                body: clipped,
+              };
+            }
+
+            function escapeRegExp(value) {
+              return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            }
+
+            function sanitizeAiReminder(text, username) {
+              let result = (text || "")
+                .replace(/<!--[\s\S]*?-->/g, "")
+                .replace(/\r\n/g, "\n")
+                .trim();
+
+              if (!result) {
+                return "";
+              }
+
+              const mention = `@${username}`;
+              const mentionPattern = new RegExp(`${escapeRegExp(mention)}\\b`, "g");
+              let sawMention = false;
+              result = result.replace(mentionPattern, () => {
+                if (!sawMention) {
+                  sawMention = true;
+                  return mention;
+                }
+                return targetDisplayName;
+              });
+
+              if (!sawMention) {
+                result = `${mention} ${result}`;
+              }
+
+              return result.length > 900 ? `${result.slice(0, 897)}...` : result;
+            }
+
+            function seededChoice(items, seed) {
+              let hash = 0;
+              for (const char of seed) {
+                hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+              }
+              return items[hash % items.length];
+            }
+
+            function fallbackReminder(username, localDate, confirmationSummary) {
+              const titles = [
+                "Dinner Bureau Case Officer",
+                "Certified Bowl Participant",
+                "Rice Compliance Specialist",
+                "Soup Court Witness",
+                "Evening Meal Field Agent",
+              ];
+              const missions = [
+                "eat something that required a bowl, plate, or actual cooking",
+                "submit one credible meal to the evening record",
+                "make snacks supporting evidence, not the main report",
+                "complete the ancient ritual known as dinner",
+                "acquire one warm or substantial food object",
+              ];
+              const title = seededChoice(titles, `${localDate}:title`);
+              const mission = seededChoice(missions, `${localDate}:mission`);
+              const yesterdayLine = confirmationSummary.yesterdayConfirmed
+                ? "Yesterday's dinner filing was accepted."
+                : "Yesterday's paperwork is still classified as mysterious.";
+
+              return [
+                `@${username} ${targetDisplayName}, dinner checkpoint is open.`,
+                "",
+                `Today's title: ${title}`,
+                `Mission: ${mission}.`,
+                yesterdayLine,
+              ].join("\n");
+            }
+
+            function extractOutputText(responseJson) {
+              if (typeof responseJson.output_text === "string") {
+                return responseJson.output_text.trim();
+              }
+
+              const chunks = [];
+              for (const item of responseJson.output || []) {
+                for (const content of item.content || []) {
+                  if (content.type === "output_text" && content.text) {
+                    chunks.push(content.text);
+                  }
+                }
+              }
+              return chunks.join("\n").trim();
+            }
+
+            async function buildAiReminder({ username, localDate, recentComments, confirmationSummary }) {
+              const apiKey = process.env.OPENAI_API_KEY;
+              if (!apiKey) {
+                core.info("OPENAI_API_KEY is not configured; using fallback reminder.");
+                return fallbackReminder(username, localDate, confirmationSummary);
+              }
+
+              const promptData = {
+                target: {
+                  username,
+                  displayName: targetDisplayName,
+                },
+                localDate,
+                confirmationSummary,
+                recentComments,
+              };
+
+              const systemPrompt = [
+                "You write one daily GitHub issue comment reminding a friend to eat dinner.",
+                "The reminder should feel like a playful recurring agent, not a lecture.",
+                `Mention @${username} exactly once.`,
+                `Use the name ${targetDisplayName} at most once.`,
+                "Be warm, concise, and lightly absurd.",
+                "You may reference recent replies or the streak if the provided data supports it.",
+                "Do not shame, guilt, diagnose, discuss body weight, or use medical framing.",
+                "Do not imply surveillance. Do not use profanity or romantic language.",
+                "Keep it under 650 characters.",
+                "Do not include markdown headings, code fences, links, or HTML comments.",
+                "Default to English. Use tiny simple Chinese only if recent comments use Chinese.",
+              ].join("\n");
+
+              try {
+                const baseUrl = (process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+                const response = await fetch(`${baseUrl}/v1/responses`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: process.env.OPENAI_MODEL || "gpt-5.2",
+                    input: [
+                      {
+                        role: "system",
+                        content: [{ type: "input_text", text: systemPrompt }],
+                      },
+                      {
+                        role: "user",
+                        content: [
+                          {
+                            type: "input_text",
+                            text: [
+                              "Create today's dinner reminder from this context.",
+                              JSON.stringify(promptData, null, 2),
+                            ].join("\n\n"),
+                          },
+                        ],
+                      },
+                    ],
+                    max_output_tokens: 220,
+                  }),
+                });
+
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  core.warning(`OpenAI request failed (${response.status}): ${errorText.slice(0, 500)}`);
+                  return fallbackReminder(username, localDate, confirmationSummary);
+                }
+
+                const responseJson = await response.json();
+                const aiText = sanitizeAiReminder(extractOutputText(responseJson), username);
+                if (!aiText) {
+                  core.warning("OpenAI response did not contain usable text; using fallback reminder.");
+                  return fallbackReminder(username, localDate, confirmationSummary);
+                }
+
+                return aiText;
+              } catch (error) {
+                core.warning(`OpenAI request threw an error: ${error.message}`);
+                return fallbackReminder(username, localDate, confirmationSummary);
+              }
+            }
+
+            const localTime = formatLondonDate(now);
+            const localDate = localTime.date;
+            const localHour = localTime.hour;
             if (eventName === "schedule" && localHour !== 18) {
-              core.info(`Skipping run outside 18:00 UK time window: ${localHour}:${parts.minute}`);
+              core.info(`Skipping run outside 18:00 UK time window: ${localHour}:${localTime.minute}`);
               return;
             }
 
@@ -53,10 +264,6 @@ jobs:
             const issueTitle = process.env.ISSUE_TITLE;
             const username = process.env.TARGET_USERNAME;
             const reminderMarker = `<!-- dinner-reminder:${localDate} -->`;
-            const reminderBody = [
-              reminderMarker,
-              `@${username} Xueyin, don't forget dinner.`,
-            ].join("\n");
 
             const issues = await github.paginate(github.rest.issues.listForRepo, {
               owner,
@@ -76,7 +283,7 @@ jobs:
                 title: issueTitle,
                 body: [
                   "This issue is used by the scheduled reminder workflow.",
-                  "It keeps daily dinner reminders for Xueyin in one thread.",
+                  `It keeps daily dinner reminders for ${targetDisplayName} in one thread.`,
                 ].join("\n\n"),
                 labels: [],
               });
@@ -99,6 +306,35 @@ jobs:
               core.info(`Reminder already posted for ${localDate}`);
               return;
             }
+
+            const usernameLower = username.toLowerCase();
+            const yesterday = previousLondonDate(localDate);
+            const targetComments = comments.filter(
+              (comment) => (comment.user?.login || "").toLowerCase() === usernameLower,
+            );
+            const confirmedComments = targetComments.filter((comment) =>
+              hasDinnerConfirmation(comment.body),
+            );
+            const confirmedDates = new Set(
+              confirmedComments.map((comment) =>
+                formatLondonDate(new Date(comment.created_at)).date,
+              ),
+            );
+
+            const confirmationSummary = {
+              yesterdayConfirmed: confirmedDates.has(yesterday),
+              confirmedDaysInRecentThread: confirmedDates.size,
+              lastConfirmedDate: [...confirmedDates].sort().at(-1) || null,
+              targetReplyCount: targetComments.length,
+            };
+            const recentComments = comments.slice(-12).map(compactComment);
+            const aiReminder = await buildAiReminder({
+              username,
+              localDate,
+              recentComments,
+              confirmationSummary,
+            });
+            const reminderBody = [reminderMarker, aiReminder].join("\n");
 
             await github.rest.issues.createComment({
               owner,
