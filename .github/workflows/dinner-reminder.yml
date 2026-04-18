@@ -289,6 +289,15 @@ jobs:
               });
               reminderIssue = created.data;
               core.info(`Created reminder issue #${reminderIssue.number}`);
+            } else if (reminderIssue.state === "closed") {
+              const reopened = await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: reminderIssue.number,
+                state: "open",
+              });
+              reminderIssue = reopened.data;
+              core.info(`Reopened reminder issue #${reminderIssue.number}`);
             }
 
             const comments = await github.paginate(github.rest.issues.listComments, {
