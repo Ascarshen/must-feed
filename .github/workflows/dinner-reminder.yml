@@ -2,9 +2,9 @@ name: Dinner Reminder
 
 on:
   schedule:
-    # 18:00 in the UK during BST and GMT respectively.
+    # 18:00 in Denmark during CEST and CET respectively.
+    - cron: "0 16 * * *"
     - cron: "0 17 * * *"
-    - cron: "0 18 * * *"
   workflow_dispatch:
 
 permissions:
@@ -14,6 +14,7 @@ permissions:
 env:
   TARGET_USERNAME: XYUnknown
   TARGET_DISPLAY_NAME: Xueying
+  TARGET_TIME_ZONE: Europe/Copenhagen
   ISSUE_TITLE: Daily dinner reminder for Xueying
   OPENAI_BASE_URL: https://api.ikuncode.cc
   OPENAI_MODEL: gpt-5.2
@@ -31,10 +32,11 @@ jobs:
             const eventName = context.eventName;
             const now = new Date();
             const targetDisplayName = process.env.TARGET_DISPLAY_NAME;
+            const targetTimeZone = process.env.TARGET_TIME_ZONE || "Europe/Copenhagen";
 
-            function formatLondonDate(date) {
-              const london = new Intl.DateTimeFormat("en-GB", {
-                timeZone: "Europe/London",
+            function formatTargetDate(date) {
+              const target = new Intl.DateTimeFormat("en-GB", {
+                timeZone: targetTimeZone,
                 year: "numeric",
                 month: "2-digit",
                 day: "2-digit",
@@ -44,7 +46,7 @@ jobs:
               }).formatToParts(date);
 
               const parts = Object.fromEntries(
-                london
+                target
                   .filter((part) => part.type !== "literal")
                   .map((part) => [part.type, part.value]),
               );
@@ -56,10 +58,10 @@ jobs:
               };
             }
 
-            function previousLondonDate(localDate) {
+            function previousTargetDate(localDate) {
               const noonUtc = new Date(`${localDate}T12:00:00Z`);
               noonUtc.setUTCDate(noonUtc.getUTCDate() - 1);
-              return formatLondonDate(noonUtc).date;
+              return formatTargetDate(noonUtc).date;
             }
 
             function hasDinnerConfirmation(body) {
@@ -77,7 +79,7 @@ jobs:
               const clipped = body.length > 280 ? `${body.slice(0, 277)}...` : body;
               return {
                 author: comment.user?.login || "unknown",
-                date: formatLondonDate(new Date(comment.created_at)).date,
+                date: formatTargetDate(new Date(comment.created_at)).date,
                 body: clipped,
               };
             }
@@ -252,11 +254,11 @@ jobs:
               }
             }
 
-            const localTime = formatLondonDate(now);
+            const localTime = formatTargetDate(now);
             const localDate = localTime.date;
             const localHour = localTime.hour;
             if (eventName === "schedule" && localHour !== 18) {
-              core.info(`Skipping run outside 18:00 UK time window: ${localHour}:${localTime.minute}`);
+              core.info(`Skipping run outside 18:00 ${targetTimeZone} time window: ${localHour}:${localTime.minute}`);
               return;
             }
 
@@ -318,7 +320,7 @@ jobs:
             }
 
             const usernameLower = username.toLowerCase();
-            const yesterday = previousLondonDate(localDate);
+            const yesterday = previousTargetDate(localDate);
             const targetComments = comments.filter(
               (comment) => (comment.user?.login || "").toLowerCase() === usernameLower,
             );
@@ -327,7 +329,7 @@ jobs:
             );
             const confirmedDates = new Set(
               confirmedComments.map((comment) =>
-                formatLondonDate(new Date(comment.created_at)).date,
+                formatTargetDate(new Date(comment.created_at)).date,
               ),
             );
 
