@@ -71,6 +71,13 @@ jobs:
               return confirmationPattern.test(text);
             }
 
+            function hasDinnerDenial(body) {
+              const text = (body || "").toLowerCase();
+              const denialPattern =
+                /\b(did not eat|didn't eat|have not eaten|haven't eaten|not yet|no dinner|skipped dinner|skip dinner)\b|(\u6ca1\u5403|\u672a\u5403|\u8fd8\u6ca1|\u6ca1\u6709\u5403)/i;
+              return denialPattern.test(text);
+            }
+
             function compactComment(comment) {
               const body = (comment.body || "")
                 .replace(/<!--[\s\S]*?-->/g, "")
@@ -82,6 +89,11 @@ jobs:
                 date: formatTargetDate(new Date(comment.created_at)).date,
                 body: clipped,
               };
+            }
+
+            function getReminderDate(body) {
+              const match = /<!--\s*dinner-reminder:(\d{4}-\d{2}-\d{2})\s*-->/.exec(body || "");
+              return match ? match[1] : null;
             }
 
             function escapeRegExp(value) {
@@ -170,6 +182,162 @@ jobs:
               return chunks.join("\n").trim();
             }
 
+            function parseJsonObject(text) {
+              const cleaned = (text || "")
+                .trim()
+                .replace(/^```(?:json)?\s*/i, "")
+                .replace(/\s*```$/i, "");
+              const start = cleaned.indexOf("{");
+              const end = cleaned.lastIndexOf("}");
+              if (start === -1 || end === -1 || end < start) {
+                return null;
+              }
+
+              try {
+                return JSON.parse(cleaned.slice(start, end + 1));
+              } catch {
+                return null;
+              }
+            }
+
+            function normalizeReplyAnalysis(value, replies, source) {
+              const latestReplyDate = replies.length ? replies.at(-1).date : null;
+              const allowedStatuses = new Set(["confirmed", "denied", "unclear", "no_reply"]);
+              const allowedDates = new Set(["today", "yesterday", "unknown"]);
+              const status = allowedStatuses.has(value?.status) ? value.status : "unclear";
+              const confirmationDate = allowedDates.has(value?.confirmationDate)
+                ? value.confirmationDate
+                : "unknown";
+              const confidence = Number(value?.confidence);
+
+              return {
+                status,
+                confirmed: Boolean(value?.confirmed) && status === "confirmed",
+                confirmationDate,
+                mealDescription: value?.mealDescription ? String(value.mealDescription).slice(0, 120) : null,
+                confidence: Number.isFinite(confidence) ? Math.max(0, Math.min(1, confidence)) : 0,
+                reason: value?.reason ? String(value.reason).slice(0, 160) : null,
+                replyCount: replies.length,
+                latestReplyDate,
+                source,
+              };
+            }
+
+            function fallbackReplyAnalysis(replies) {
+              if (!replies.length) {
+                return normalizeReplyAnalysis(
+                  {
+                    status: "no_reply",
+                    confirmed: false,
+                    confirmationDate: "unknown",
+                    confidence: 1,
+                    reason: "No target replies since the latest reminder.",
+                  },
+                  replies,
+                  "none",
+                );
+              }
+
+              const confirmed = replies.some((reply) => hasDinnerConfirmation(reply.body));
+              const denied = replies.some((reply) => hasDinnerDenial(reply.body));
+              const status = confirmed ? "confirmed" : denied ? "denied" : "unclear";
+
+              return normalizeReplyAnalysis(
+                {
+                  status,
+                  confirmed,
+                  confirmationDate: confirmed ? "unknown" : "unknown",
+                  confidence: confirmed || denied ? 0.55 : 0.35,
+                  reason: confirmed
+                    ? "Keyword fallback found dinner confirmation language."
+                    : denied
+                      ? "Keyword fallback found dinner denial language."
+                      : "Keyword fallback could not classify the reply.",
+                },
+                replies,
+                "keyword-fallback",
+              );
+            }
+
+            async function classifyDinnerReplies({ localDate, replies }) {
+              if (!replies.length) {
+                return fallbackReplyAnalysis(replies);
+              }
+
+              const apiKey = process.env.OPENAI_API_KEY;
+              if (!apiKey) {
+                core.info("OPENAI_API_KEY is not configured; using keyword fallback for reply classification.");
+                return fallbackReplyAnalysis(replies);
+              }
+
+              const systemPrompt = [
+                "You classify target-user replies in a GitHub dinner reminder issue.",
+                "Return only one JSON object and no surrounding text.",
+                "Schema: {\"status\":\"confirmed|denied|unclear\",\"confirmed\":boolean,\"confirmationDate\":\"today|yesterday|unknown\",\"mealDescription\":string|null,\"confidence\":number,\"reason\":string}.",
+                "Use confirmed only when the reply says the target ate, is eating, finished dinner, or gives concrete meal evidence.",
+                "Use denied when the reply says they did not eat, skipped dinner, or have not eaten yet.",
+                "Use unclear for jokes, acknowledgements, or anything without enough dinner evidence.",
+                "confirmationDate is relative to localDate in the provided context.",
+              ].join("\n");
+
+              const promptData = {
+                localDate,
+                timeZone: targetTimeZone,
+                replies,
+              };
+
+              try {
+                const baseUrl = (process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+                const response = await fetch(`${baseUrl}/v1/responses`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: process.env.OPENAI_MODEL || "gpt-5.2",
+                    input: [
+                      {
+                        role: "system",
+                        content: [{ type: "input_text", text: systemPrompt }],
+                      },
+                      {
+                        role: "user",
+                        content: [
+                          {
+                            type: "input_text",
+                            text: [
+                              "Classify these target-user replies.",
+                              JSON.stringify(promptData, null, 2),
+                            ].join("\n\n"),
+                          },
+                        ],
+                      },
+                    ],
+                    max_output_tokens: 160,
+                  }),
+                });
+
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  core.warning(`Reply classification request failed (${response.status}): ${errorText.slice(0, 500)}`);
+                  return fallbackReplyAnalysis(replies);
+                }
+
+                const responseJson = await response.json();
+                const parsed = parseJsonObject(extractOutputText(responseJson));
+                if (!parsed) {
+                  core.warning("Reply classification response did not contain valid JSON; using keyword fallback.");
+                  return fallbackReplyAnalysis(replies);
+                }
+
+                return normalizeReplyAnalysis(parsed, replies, "ai");
+              } catch (error) {
+                core.warning(`Reply classification request threw an error: ${error.message}`);
+                return fallbackReplyAnalysis(replies);
+              }
+            }
+
             async function buildAiReminder({ username, localDate, recentComments, confirmationSummary }) {
               const apiKey = process.env.OPENAI_API_KEY;
               if (!apiKey) {
@@ -194,6 +362,7 @@ jobs:
                 `Use the name ${targetDisplayName} at most once.`,
                 "Be warm, concise, and lightly absurd.",
                 "You may reference recent replies or the streak if the provided data supports it.",
+                "Treat confirmationSummary.replyAnalysis as the standardized interpretation of any new target replies.",
                 "If confirmationSummary shows no recent target replies or no dinner confirmation, you may make one light bureaucratic joke about missing paperwork, but do not scold, guilt, or sound disappointed.",
                 "Do not shame, guilt, diagnose, discuss body weight, or use medical framing.",
                 "Do not imply surveillance. Do not use profanity.",
@@ -324,7 +493,25 @@ jobs:
             const targetComments = comments.filter(
               (comment) => (comment.user?.login || "").toLowerCase() === usernameLower,
             );
-            const confirmedComments = targetComments.filter((comment) =>
+            const latestReminderComment = comments
+              .filter((comment) => getReminderDate(comment.body))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .at(0);
+            const latestReminderAt = latestReminderComment
+              ? new Date(latestReminderComment.created_at).getTime()
+              : 0;
+            const newTargetReplies = targetComments
+              .filter((comment) => new Date(comment.created_at).getTime() > latestReminderAt)
+              .map(compactComment);
+            const replyAnalysis = await classifyDinnerReplies({
+              localDate,
+              replies: newTargetReplies,
+            });
+            core.info(`Reply analysis: ${JSON.stringify(replyAnalysis)}`);
+            const historicalTargetComments = targetComments.filter(
+              (comment) => new Date(comment.created_at).getTime() <= latestReminderAt,
+            );
+            const confirmedComments = historicalTargetComments.filter((comment) =>
               hasDinnerConfirmation(comment.body),
             );
             const confirmedDates = new Set(
@@ -332,12 +519,23 @@ jobs:
                 formatTargetDate(new Date(comment.created_at)).date,
               ),
             );
+            if (replyAnalysis.confirmed) {
+              if (replyAnalysis.confirmationDate === "today") {
+                confirmedDates.add(localDate);
+              } else if (replyAnalysis.confirmationDate === "yesterday") {
+                confirmedDates.add(yesterday);
+              } else if (replyAnalysis.latestReplyDate) {
+                confirmedDates.add(replyAnalysis.latestReplyDate);
+              }
+            }
 
             const confirmationSummary = {
               yesterdayConfirmed: confirmedDates.has(yesterday),
               confirmedDaysInRecentThread: confirmedDates.size,
               lastConfirmedDate: [...confirmedDates].sort().at(-1) || null,
               targetReplyCount: targetComments.length,
+              newTargetReplyCount: newTargetReplies.length,
+              replyAnalysis,
             };
             const recentComments = comments.slice(-12).map(compactComment);
             const aiReminder = await buildAiReminder({
