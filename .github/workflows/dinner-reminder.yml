@@ -64,26 +64,19 @@ jobs:
               return formatTargetDate(noonUtc).date;
             }
 
-            function hasDinnerConfirmation(body) {
-              const text = (body || "").toLowerCase();
-              const confirmationPattern =
-                /\b(done|ate|eaten|fed|dinner|meal|noodles?|rice|soup|pasta|cooked|food|finished)\b|[\u2705\u2611]|(\u5403\u4e86|\u5df2\u5403|\u5403\u996d|\u665a\u996d|\u9762|\u996d|\u7c73\u996d|\u6c64|\u9971)/i;
-              return confirmationPattern.test(text);
-            }
-
-            function hasDinnerDenial(body) {
-              const text = (body || "").toLowerCase();
-              const denialPattern =
-                /\b(did not eat|didn't eat|have not eaten|haven't eaten|not yet|no dinner|skipped dinner|skip dinner)\b|(\u6ca1\u5403|\u672a\u5403|\u8fd8\u6ca1|\u6ca1\u6709\u5403)/i;
-              return denialPattern.test(text);
+            function commentPlainText(comment) {
+              return (comment.body || "")
+                .replace(/<!--[\s\S]*?-->/g, "")
+                .split(/\r?\n/)
+                .filter((line) => !line.trimStart().startsWith(">"))
+                .join("\n")
+                .replace(/\s+/g, " ")
+                .trim();
             }
 
             function compactComment(comment) {
-              const body = (comment.body || "")
-                .replace(/<!--[\s\S]*?-->/g, "")
-                .replace(/\s+/g, " ")
-                .trim();
-              const clipped = body.length > 280 ? `${body.slice(0, 277)}...` : body;
+              const body = commentPlainText(comment);
+              const clipped = body.length > 520 ? `${body.slice(0, 517)}...` : body;
               return {
                 author: comment.user?.login || "unknown",
                 date: formatTargetDate(new Date(comment.created_at)).date,
@@ -94,6 +87,56 @@ jobs:
             function getReminderDate(body) {
               const match = /<!--\s*dinner-reminder:(\d{4}-\d{2}-\d{2})\s*-->/.exec(body || "");
               return match ? match[1] : null;
+            }
+
+            function getDinnerState(body) {
+              const match = /<!--\s*dinner-state:([A-Za-z0-9+/=]+)\s*-->/.exec(body || "");
+              if (!match) {
+                return null;
+              }
+
+              try {
+                return JSON.parse(Buffer.from(match[1], "base64").toString("utf8"));
+              } catch {
+                return null;
+              }
+            }
+
+            function createDinnerStateMarker(state) {
+              const encoded = Buffer.from(JSON.stringify(state), "utf8").toString("base64");
+              return `<!-- dinner-state:${encoded} -->`;
+            }
+
+            function getCommentTime(comment) {
+              const time = new Date(comment.created_at).getTime();
+              return Number.isFinite(time) ? time : 0;
+            }
+
+            function summarizeDayStatus(date, replies, replyAnalysis = null) {
+              const status = replyAnalysis?.status || (replies.length ? "unclear" : "no_reply");
+              const latestReply = replies.at(-1) || null;
+
+              return {
+                date,
+                status,
+                confirmed: status === "confirmed",
+                replyCount: replies.length,
+                latestReplyDate: latestReply?.date || null,
+                latestReplyBody: latestReply?.body || null,
+                mealDescription: replyAnalysis?.mealDescription || null,
+                analysisSource: replyAnalysis?.source || (replies.length ? "unclassified" : "none"),
+                analysisReason: replyAnalysis?.reason || null,
+              };
+            }
+
+            function calculateConfirmedStreak(dinnerByDate, endDate) {
+              let count = 0;
+              let cursor = endDate;
+              while (cursor && dinnerByDate[cursor]?.status === "confirmed") {
+                count += 1;
+                cursor = previousTargetDate(cursor);
+              }
+              return count;
             }
 
             function escapeRegExp(value) {
@@ -153,9 +196,13 @@ jobs:
               ];
               const title = seededChoice(titles, `${localDate}:title`);
               const mission = seededChoice(missions, `${localDate}:mission`);
-              const yesterdayLine = confirmationSummary.yesterdayConfirmed
-                ? "Yesterday's dinner filing was accepted."
-                : "Yesterday's paperwork is still classified as mysterious.";
+              const previousStatus = confirmationSummary.previousDayStatus;
+              const previousReply = previousStatus?.latestReplyBody
+                ? previousStatus.latestReplyBody.slice(0, 180)
+                : null;
+              const yesterdayLine = previousStatus?.status === "confirmed"
+                ? `Previous dinner confirmed${previousReply ? `: ${previousReply}` : "."}`
+                : "Previous dinner status is still unconfirmed.";
 
               return [
                 `@${username} ${targetDisplayName}, dinner checkpoint is open.`,
@@ -163,6 +210,7 @@ jobs:
                 `Today's title: ${title}`,
                 `Mission: ${mission}.`,
                 yesterdayLine,
+                `Confirmed streak: ${confirmationSummary.confirmedStreakDays || 0} day(s).`,
               ].join("\n");
             }
 
@@ -212,7 +260,7 @@ jobs:
 
               return {
                 status,
-                confirmed: Boolean(value?.confirmed) && status === "confirmed",
+                confirmed: status === "confirmed",
                 confirmationDate,
                 mealDescription: value?.mealDescription ? String(value.mealDescription).slice(0, 120) : null,
                 confidence: Number.isFinite(confidence) ? Math.max(0, Math.min(1, confidence)) : 0,
@@ -238,24 +286,16 @@ jobs:
                 );
               }
 
-              const confirmed = replies.some((reply) => hasDinnerConfirmation(reply.body));
-              const denied = replies.some((reply) => hasDinnerDenial(reply.body));
-              const status = confirmed ? "confirmed" : denied ? "denied" : "unclear";
-
               return normalizeReplyAnalysis(
                 {
-                  status,
-                  confirmed,
-                  confirmationDate: confirmed ? "unknown" : "unknown",
-                  confidence: confirmed || denied ? 0.55 : 0.35,
-                  reason: confirmed
-                    ? "Keyword fallback found dinner confirmation language."
-                    : denied
-                      ? "Keyword fallback found dinner denial language."
-                      : "Keyword fallback could not classify the reply.",
+                  status: "unclear",
+                  confirmed: false,
+                  confirmationDate: "unknown",
+                  confidence: 0,
+                  reason: "LLM classification was unavailable, so the reply was not guessed.",
                 },
                 replies,
-                "keyword-fallback",
+                "llm-unavailable",
               );
             }
 
@@ -266,7 +306,7 @@ jobs:
 
               const apiKey = process.env.OPENAI_API_KEY;
               if (!apiKey) {
-                core.info("OPENAI_API_KEY is not configured; using keyword fallback for reply classification.");
+                core.info("OPENAI_API_KEY is not configured; marking replies unclear instead of guessing.");
                 return fallbackReplyAnalysis(replies);
               }
 
@@ -274,6 +314,8 @@ jobs:
                 "You classify target-user replies in a GitHub dinner reminder issue.",
                 "Return only one JSON object and no surrounding text.",
                 "Schema: {\"status\":\"confirmed|denied|unclear\",\"confirmed\":boolean,\"confirmationDate\":\"today|yesterday|unknown\",\"mealDescription\":string|null,\"confidence\":number,\"reason\":string}.",
+                "The provided localDate is the dinner date being checked, usually the previous reminder date.",
+                "Quoted GitHub reply text has been removed before you see the replies; classify only the target user's own words.",
                 "Use confirmed only when the reply says the target ate, is eating, finished dinner, or gives concrete meal evidence.",
                 "Use denied when the reply says they did not eat, skipped dinner, or have not eaten yet.",
                 "Use unclear for jokes, acknowledgements, or anything without enough dinner evidence.",
@@ -327,7 +369,7 @@ jobs:
                 const responseJson = await response.json();
                 const parsed = parseJsonObject(extractOutputText(responseJson));
                 if (!parsed) {
-                  core.warning("Reply classification response did not contain valid JSON; using keyword fallback.");
+                  core.warning("Reply classification response did not contain valid JSON; marking replies unclear.");
                   return fallbackReplyAnalysis(replies);
                 }
 
@@ -338,7 +380,96 @@ jobs:
               }
             }
 
-            async function buildAiReminder({ username, localDate, recentComments, confirmationSummary }) {
+            async function classifyDinnerReplyDays({ dayReplyGroups }) {
+              const groupsWithReplies = dayReplyGroups.filter((group) => group.replies.length);
+              if (!groupsWithReplies.length) {
+                return {};
+              }
+
+              const apiKey = process.env.OPENAI_API_KEY;
+              if (!apiKey) {
+                core.info("OPENAI_API_KEY is not configured; historical reply statuses remain unclassified.");
+                return {};
+              }
+
+              const systemPrompt = [
+                "You classify target-user replies for multiple dinner reminder dates.",
+                "Return only one JSON object and no surrounding text.",
+                "Schema: {\"days\":[{\"date\":\"YYYY-MM-DD\",\"status\":\"confirmed|denied|unclear\",\"confirmed\":boolean,\"confirmationDate\":\"today|yesterday|unknown\",\"mealDescription\":string|null,\"confidence\":number,\"reason\":string}]}",
+                "Each date is the dinner date being checked.",
+                "Quoted GitHub reply text has been removed before you see the replies; classify only the target user's own words.",
+                "Use confirmed only when the reply says the target ate, is eating, finished dinner, or gives concrete meal evidence.",
+                "Use denied when the reply says they did not eat, skipped dinner, or have not eaten yet.",
+                "Use unclear for jokes, acknowledgements, or anything without enough dinner evidence.",
+              ].join("\n");
+
+              const promptData = {
+                timeZone: targetTimeZone,
+                days: groupsWithReplies,
+              };
+
+              try {
+                const baseUrl = (process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+                const response = await fetch(`${baseUrl}/v1/responses`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: process.env.OPENAI_MODEL || "gpt-5.2",
+                    input: [
+                      {
+                        role: "system",
+                        content: [{ type: "input_text", text: systemPrompt }],
+                      },
+                      {
+                        role: "user",
+                        content: [
+                          {
+                            type: "input_text",
+                            text: [
+                              "Classify these dinner-date reply groups.",
+                              JSON.stringify(promptData, null, 2),
+                            ].join("\n\n"),
+                          },
+                        ],
+                      },
+                    ],
+                    max_output_tokens: 900,
+                  }),
+                });
+
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  core.warning(`Historical reply classification request failed (${response.status}): ${errorText.slice(0, 500)}`);
+                  return {};
+                }
+
+                const responseJson = await response.json();
+                const parsed = parseJsonObject(extractOutputText(responseJson));
+                if (!parsed || !Array.isArray(parsed.days)) {
+                  core.warning("Historical reply classification response did not contain valid days JSON.");
+                  return {};
+                }
+
+                const groupsByDate = new Map(groupsWithReplies.map((group) => [group.date, group]));
+                const analyses = {};
+                for (const day of parsed.days) {
+                  const group = groupsByDate.get(day?.date);
+                  if (group) {
+                    analyses[group.date] = normalizeReplyAnalysis(day, group.replies, "ai-history");
+                  }
+                }
+
+                return analyses;
+              } catch (error) {
+                core.warning(`Historical reply classification request threw an error: ${error.message}`);
+                return {};
+              }
+            }
+
+            async function buildAiReminder({ username, localDate, recentComments, confirmationSummary, dinnerState }) {
               const apiKey = process.env.OPENAI_API_KEY;
               if (!apiKey) {
                 core.info("OPENAI_API_KEY is not configured; using fallback reminder.");
@@ -352,6 +483,7 @@ jobs:
                 },
                 localDate,
                 confirmationSummary,
+                dinnerState,
                 recentComments,
               };
 
@@ -361,8 +493,13 @@ jobs:
                 `Mention @${username} exactly once.`,
                 `Use the name ${targetDisplayName} at most once.`,
                 "Be warm, concise, and lightly absurd.",
+                "Read dinnerState.stats and confirmationSummary.previousDayStatus before writing.",
+                "The primary behavior is to react to the previous dinner date's target reply status, then remind for today's dinner.",
+                "Use confirmationSummary.replyAnalysis as authoritative for whether the latest target reply confirmed dinner.",
+                "If confirmationSummary.replyAnalysis.status is confirmed, briefly acknowledge the confirmation before today's reminder.",
+                "If confirmationSummary.replyAnalysis.status is confirmed, do not say paperwork, proof, or confirmation is missing.",
+                "If confirmationSummary.previousDayStatus.latestReplyBody exists, you may echo one small detail from it.",
                 "You may reference recent replies or the streak if the provided data supports it.",
-                "Treat confirmationSummary.replyAnalysis as the standardized interpretation of any new target replies.",
                 "If confirmationSummary shows no recent target replies or no dinner confirmation, you may make one light bureaucratic joke about missing paperwork, but do not scold, guilt, or sound disappointed.",
                 "Do not shame, guilt, diagnose, discuss body weight, or use medical framing.",
                 "Do not imply surveillance. Do not use profanity.",
@@ -493,58 +630,131 @@ jobs:
             const targetComments = comments.filter(
               (comment) => (comment.user?.login || "").toLowerCase() === usernameLower,
             );
-            const latestReminderComment = comments
+            const reminderComments = comments
               .filter((comment) => getReminderDate(comment.body))
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-              .at(0);
+              .sort((a, b) => getCommentTime(a) - getCommentTime(b));
+            const latestReminderComment = reminderComments.at(-1);
+            const latestReminderDate = latestReminderComment
+              ? getReminderDate(latestReminderComment.body)
+              : null;
             const latestReminderAt = latestReminderComment
-              ? new Date(latestReminderComment.created_at).getTime()
+              ? getCommentTime(latestReminderComment)
               : 0;
-            const newTargetReplies = targetComments
-              .filter((comment) => new Date(comment.created_at).getTime() > latestReminderAt)
+            const previousTargetReplies = targetComments
+              .filter((comment) => getCommentTime(comment) > latestReminderAt)
               .map(compactComment);
-            const replyAnalysis = await classifyDinnerReplies({
-              localDate,
-              replies: newTargetReplies,
-            });
-            core.info(`Reply analysis: ${JSON.stringify(replyAnalysis)}`);
-            const historicalTargetComments = targetComments.filter(
-              (comment) => new Date(comment.created_at).getTime() <= latestReminderAt,
-            );
-            const confirmedComments = historicalTargetComments.filter((comment) =>
-              hasDinnerConfirmation(comment.body),
-            );
-            const confirmedDates = new Set(
-              confirmedComments.map((comment) =>
-                formatTargetDate(new Date(comment.created_at)).date,
-              ),
-            );
-            if (replyAnalysis.confirmed) {
-              if (replyAnalysis.confirmationDate === "today") {
-                confirmedDates.add(localDate);
-              } else if (replyAnalysis.confirmationDate === "yesterday") {
-                confirmedDates.add(yesterday);
-              } else if (replyAnalysis.latestReplyDate) {
-                confirmedDates.add(replyAnalysis.latestReplyDate);
+
+            const savedStates = comments
+              .map((comment) => ({
+                state: getDinnerState(comment.body),
+                time: getCommentTime(comment),
+              }))
+              .filter((entry) => entry.state)
+              .sort((a, b) => a.time - b.time);
+            const latestSavedState = savedStates.at(-1)?.state || null;
+            const dinnerByDate = { ...(latestSavedState?.dinnerByDate || {}) };
+
+            if (!latestSavedState) {
+              const historicalReplyGroups = [];
+              for (const [index, reminderComment] of reminderComments.entries()) {
+                const reminderDate = getReminderDate(reminderComment.body);
+                const start = getCommentTime(reminderComment);
+                const end = reminderComments[index + 1]
+                  ? getCommentTime(reminderComments[index + 1])
+                  : Infinity;
+                const repliesForReminder = targetComments
+                  .filter((comment) => {
+                    const time = getCommentTime(comment);
+                    return time > start && time < end;
+                  })
+                  .map(compactComment);
+                historicalReplyGroups.push({
+                  date: reminderDate,
+                  replies: repliesForReminder,
+                });
+              }
+
+              const historicalAnalyses = await classifyDinnerReplyDays({
+                dayReplyGroups: historicalReplyGroups.filter((group) =>
+                  group.date !== latestReminderDate,
+                ),
+              });
+
+              for (const group of historicalReplyGroups) {
+                if (group.date === latestReminderDate) {
+                  continue;
+                }
+
+                dinnerByDate[group.date] = summarizeDayStatus(
+                  group.date,
+                  group.replies,
+                  historicalAnalyses[group.date] || null,
+                );
               }
             }
 
+            const replyAnalysis = await classifyDinnerReplies({
+              localDate: latestReminderDate || yesterday,
+              replies: previousTargetReplies,
+            });
+            core.info(`Reply analysis: ${JSON.stringify(replyAnalysis)}`);
+
+            let previousDayStatus = null;
+            if (latestReminderDate) {
+              previousDayStatus = summarizeDayStatus(
+                latestReminderDate,
+                previousTargetReplies,
+                replyAnalysis,
+              );
+              dinnerByDate[latestReminderDate] = previousDayStatus;
+            }
+
+            const confirmedDates = Object.entries(dinnerByDate)
+              .filter(([, status]) => status?.status === "confirmed")
+              .map(([date]) => date)
+              .sort();
+            const confirmedStreakDays = calculateConfirmedStreak(dinnerByDate, yesterday);
+
             const confirmationSummary = {
-              yesterdayConfirmed: confirmedDates.has(yesterday),
-              confirmedDaysInRecentThread: confirmedDates.size,
-              lastConfirmedDate: [...confirmedDates].sort().at(-1) || null,
+              checkedDinnerDate: latestReminderDate,
+              yesterdayConfirmed: dinnerByDate[yesterday]?.status === "confirmed",
+              confirmedDaysInRecentThread: confirmedDates.length,
+              confirmedStreakDays,
+              lastConfirmedDate: confirmedDates.at(-1) || null,
               targetReplyCount: targetComments.length,
-              newTargetReplyCount: newTargetReplies.length,
+              newTargetReplyCount: previousTargetReplies.length,
+              previousDayStatus,
               replyAnalysis,
             };
+            const dinnerState = {
+              version: 1,
+              updatedAt: now.toISOString(),
+              localDate,
+              checkedDinnerDate: latestReminderDate,
+              dinnerByDate,
+              stats: {
+                totalTrackedDays: Object.keys(dinnerByDate).length,
+                confirmedDays: confirmedDates.length,
+                confirmedStreakDays,
+                lastConfirmedDate: confirmationSummary.lastConfirmedDate,
+                yesterdayConfirmed: confirmationSummary.yesterdayConfirmed,
+                targetReplyCount: targetComments.length,
+              },
+            };
+            core.info(`Dinner state: ${JSON.stringify(dinnerState)}`);
             const recentComments = comments.slice(-12).map(compactComment);
             const aiReminder = await buildAiReminder({
               username,
               localDate,
               recentComments,
               confirmationSummary,
+              dinnerState,
             });
-            const reminderBody = [reminderMarker, aiReminder].join("\n");
+            const reminderBody = [
+              reminderMarker,
+              createDinnerStateMarker(dinnerState),
+              aiReminder,
+            ].join("\n");
 
             await github.rest.issues.createComment({
               owner,
