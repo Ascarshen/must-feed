@@ -2,9 +2,12 @@ name: Dinner Reminder
 
 on:
   schedule:
-    # 18:00 in Denmark during CEST and CET respectively.
+    # Multiple UTC attempts; the script posts at most once per Denmark local date.
     - cron: "0 16 * * *"
+    - cron: "30 16 * * *"
     - cron: "0 17 * * *"
+    - cron: "30 17 * * *"
+    - cron: "0 18 * * *"
   workflow_dispatch:
 
 permissions:
@@ -562,11 +565,6 @@ jobs:
 
             const localTime = formatTargetDate(now);
             const localDate = localTime.date;
-            const localHour = localTime.hour;
-            if (eventName === "schedule" && localHour !== 18) {
-              core.info(`Skipping run outside 18:00 ${targetTimeZone} time window: ${localHour}:${localTime.minute}`);
-              return;
-            }
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
