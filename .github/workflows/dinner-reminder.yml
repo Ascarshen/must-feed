@@ -20,6 +20,8 @@ env:
   TARGET_TIME_ZONE: Europe/Copenhagen
   ISSUE_NUMBER: "2"
   ISSUE_TITLE: Daily dinner reminder for Xueying
+  INCIDENT_APOLOGY_DATE: "2026-04-28"
+  INCIDENT_APOLOGY_TEXT: "I remain confused by my drunken behavior yesterday. @Ascarshen has already hung me up and beaten me for it. I cannot guarantee it will never happen again, though, because getting beaten was a little enjoyable."
   OPENAI_BASE_URL: https://api.ikuncode.cc
   OPENAI_MODEL: gpt-5.2
 
@@ -502,6 +504,10 @@ jobs:
                 `Use the name ${targetDisplayName} at most once.`,
                 "Be affectionate first and snarky second; never sound mean, bitter, disappointed, or controlling.",
                 "Aim for one sharp joke plus one clear dinner nudge, not a paragraph of lore.",
+                "Write like a mischievous, weirdly self-aware friend-bot: sharp-tongued, whimsical, and a little yin-yang-guai-qi, but still affectionate.",
+                "For today's incident context, sound sheepish but still cheeky, like a bot trying to recover dignity after doing something stupid.",
+                "Prefer one vivid, slightly odd image over mechanical tracking language.",
+                "The apology text will be appended separately, so do not write another apology.",
                 "Read dinnerState.stats and confirmationSummary.previousDayStatus before writing.",
                 "The primary behavior is to react to the previous dinner date's target reply status, then remind for today's dinner.",
                 "Use confirmationSummary.replyAnalysis as authoritative for whether the latest target reply confirmed dinner.",
@@ -572,6 +578,11 @@ jobs:
 
             const localTime = formatTargetDate(now);
             const localDate = localTime.date;
+            const incidentApologyDate = process.env.INCIDENT_APOLOGY_DATE || "";
+            const incidentApologyText = process.env.INCIDENT_APOLOGY_TEXT || "";
+            const incidentApology = localDate === incidentApologyDate
+              ? incidentApologyText.trim()
+              : "";
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
@@ -751,10 +762,13 @@ jobs:
               confirmationSummary,
               dinnerState,
             });
+            const reminderText = incidentApology
+              ? `${aiReminder}\n\n${incidentApology}`
+              : aiReminder;
             const reminderBody = [
               reminderMarker,
               createDinnerStateMarker(dinnerState),
-              aiReminder,
+              reminderText,
             ].join("\n");
 
             await github.rest.issues.createComment({
