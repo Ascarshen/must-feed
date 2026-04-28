@@ -10,8 +10,12 @@ on:
     - cron: "0 18 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: dinner-reminder
+  cancel-in-progress: false
+
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 env:
@@ -20,6 +24,7 @@ env:
   TARGET_TIME_ZONE: Europe/Copenhagen
   ISSUE_NUMBER: "2"
   ISSUE_TITLE: Daily dinner reminder for Xueying
+  STATE_FILE: data/dinner-state.json
   INCIDENT_APOLOGY_DATE: "2026-04-28"
   INCIDENT_APOLOGY_TEXT: "I remain confused by my drunken behavior yesterday. @Ascarshen has already hung me up and beaten me for it. I cannot guarantee it will never happen again, though, because getting beaten was a little enjoyable."
   OPENAI_BASE_URL: https://api.ikuncode.cc
@@ -111,6 +116,78 @@ jobs:
             function createDinnerStateMarker(state) {
               const encoded = Buffer.from(JSON.stringify(state), "utf8").toString("base64");
               return `<!-- dinner-state:${encoded} -->`;
+            }
+
+            function normalizeDinnerState(value) {
+              if (!value || typeof value !== "object") {
+                return null;
+              }
+
+              return {
+                ...value,
+                dinnerByDate:
+                  value.dinnerByDate && typeof value.dinnerByDate === "object"
+                    ? value.dinnerByDate
+                    : {},
+                stats:
+                  value.stats && typeof value.stats === "object"
+                    ? value.stats
+                    : {},
+              };
+            }
+
+            async function readDinnerStateFile({ owner, repo, path }) {
+              try {
+                const response = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path,
+                });
+
+                if (Array.isArray(response.data) || response.data.type !== "file") {
+                  throw new Error(`State path ${path} is not a file.`);
+                }
+
+                const content = Buffer.from(response.data.content, "base64").toString("utf8");
+                const state = normalizeDinnerState(JSON.parse(content));
+                if (!state) {
+                  throw new Error(`State file ${path} does not contain a JSON object.`);
+                }
+
+                return {
+                  state,
+                  sha: response.data.sha,
+                };
+              } catch (error) {
+                if (error.status === 404) {
+                  core.info(`Dinner state file ${path} does not exist yet; falling back to issue state.`);
+                  return {
+                    state: null,
+                    sha: null,
+                  };
+                }
+
+                throw error;
+              }
+            }
+
+            async function writeDinnerStateFile({ owner, repo, path, sha, state }) {
+              const content = Buffer.from(`${JSON.stringify(state, null, 2)}\n`, "utf8").toString("base64");
+              const request = {
+                owner,
+                repo,
+                path,
+                message: `Update dinner state for ${state.localDate}`,
+                content,
+              };
+
+              if (sha) {
+                request.sha = sha;
+              }
+
+              const response = await github.rest.repos.createOrUpdateFileContents(request);
+              core.info(`Updated dinner state file ${path} at ${response.data.commit.sha}`);
+              return response.data.content?.sha || sha;
             }
 
             function getCommentTime(comment) {
@@ -589,6 +666,7 @@ jobs:
             const issueNumber = Number(process.env.ISSUE_NUMBER);
             const issueTitle = process.env.ISSUE_TITLE;
             const username = process.env.TARGET_USERNAME;
+            const stateFilePath = process.env.STATE_FILE || "data/dinner-state.json";
             const reminderMarker = `<!-- dinner-reminder:${localDate} -->`;
 
             if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
@@ -621,6 +699,12 @@ jobs:
               core.info(`Reopened reminder issue #${reminderIssue.number}`);
             }
 
+            const stateFile = await readDinnerStateFile({
+              owner,
+              repo,
+              path: stateFilePath,
+            });
+
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
@@ -633,6 +717,21 @@ jobs:
             );
 
             if (alreadyPosted) {
+              const todayState = comments
+                .filter((comment) => (comment.body || "").includes(reminderMarker))
+                .map((comment) => getDinnerState(comment.body))
+                .find((state) => state?.localDate === localDate);
+
+              if (todayState && stateFile.state?.localDate !== localDate) {
+                await writeDinnerStateFile({
+                  owner,
+                  repo,
+                  path: stateFilePath,
+                  sha: stateFile.sha,
+                  state: todayState,
+                });
+              }
+
               core.info(`Reminder already posted for ${localDate}`);
               return;
             }
@@ -663,7 +762,8 @@ jobs:
               }))
               .filter((entry) => entry.state)
               .sort((a, b) => a.time - b.time);
-            const latestSavedState = savedStates.at(-1)?.state || null;
+            const latestCommentState = savedStates.at(-1)?.state || null;
+            const latestSavedState = stateFile.state || latestCommentState;
             const dinnerByDate = { ...(latestSavedState?.dinnerByDate || {}) };
 
             if (!latestSavedState) {
@@ -776,6 +876,14 @@ jobs:
               repo,
               issue_number: reminderIssue.number,
               body: reminderBody,
+            });
+
+            await writeDinnerStateFile({
+              owner,
+              repo,
+              path: stateFilePath,
+              sha: stateFile.sha,
+              state: dinnerState,
             });
 
             core.info(`Posted dinner reminder for ${localDate}`);
