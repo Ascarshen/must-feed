@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-28T17:41:16.809Z",
+  "localDate": "2026-04-28",
+  "checkedDinnerDate": "2026-04-26",
+  "dinnerByDate": {
+    "2026-04-18": {
+      "date": "2026-04-18",
+      "status": "no_reply",
+      "confirmed": false,
+      "replyCount": 0,
+      "latestReplyDate": null,
+      "latestReplyBody": null,
+      "mealDescription": null,
+      "analysisSource": "none",
+      "analysisReason": null
+    },
+    "2026-04-19": {
+      "date": "2026-04-19",
+      "status": "no_reply",
+      "confirmed": false,
+      "replyCount": 0,
+      "latestReplyDate": null,
+      "latestReplyBody": null,
+      "mealDescription": null,
+      "analysisSource": "none",
+      "analysisReason": null
+    },
+    "2026-04-20": {
+      "date": "2026-04-20",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-04-20",
+      "latestReplyBody": "The recipient of such a reminder can confirm that today's dinner has been prepared and consumed.",
+      "mealDescription": "dinner prepared and consumed",
+      "analysisSource": "ai-history",
+      "analysisReason": "States that today's dinner has been prepared and consumed."
+    },
+    "2026-04-21": {
+      "date": "2026-04-21",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-04-21",
+      "latestReplyBody": "Thank you vey much for your hard work of forcing me to eat. The recipient can confirm that dinner has been eaten despite the fact that the recipient has been ultimately pissed off by Lean 4.",
+      "mealDescription": "dinner has been eaten",
+      "analysisSource": "ai-history",
+      "analysisReason": "Explicitly confirms that dinner has been eaten."
+    },
+    "2026-04-22": {
+      "date": "2026-04-22",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-04-22",
+      "latestReplyBody": "Commit, dinner has been consumed. Though the recipient believes that the bot is subjected to be fine tuned by its creator :/",
+      "mealDescription": "dinner (unspecified)",
+      "analysisSource": "ai",
+      "analysisReason": "Explicitly states: 'dinner has been consumed.'"
+    },
+    "2026-04-24": {
+      "date": "2026-04-24",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-04-24",
+      "latestReplyBody": "Commit, dinner has been consumed. The recipient has been very much impressed by such a persistent reminder. In addition, the bot seems to be better trained, well done (^w^)",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "Reply explicitly states that dinner has been consumed, indicating they ate dinner on the localDate."
+    },
+    "2026-04-25": {
+      "date": "2026-04-25",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-04-25",
+      "latestReplyBody": "The recipient could confirm that today's dinner has been consumed. The recipient would like to express their gratitude to the owner of the bot for forcing them to eat dinner. In addition, the bot has been rather intelligent.",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "Reply explicitly states that today's dinner has been consumed, indicating they ate dinner on the localDate."
+    },
+    "2026-04-26": {
+      "date": "2026-04-26",
+      "status": "no_reply",
+      "confirmed": false,
+      "replyCount": 0,
+      "latestReplyDate": null,
+      "latestReplyBody": null,
+      "mealDescription": null,
+      "analysisSource": "none",
+      "analysisReason": "No target replies since the latest reminder."
+    }
+  },
+  "stats": {
+    "totalTrackedDays": 8,
+    "confirmedDays": 5,
+    "confirmedStreakDays": 0,
+    "lastConfirmedDate": "2026-04-25",
+    "yesterdayConfirmed": false,
+    "targetReplyCount": 5
+  }
+}
