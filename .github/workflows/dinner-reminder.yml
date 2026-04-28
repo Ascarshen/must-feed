@@ -18,6 +18,7 @@ env:
   TARGET_USERNAME: XYUnknown
   TARGET_DISPLAY_NAME: Xueying
   TARGET_TIME_ZONE: Europe/Copenhagen
+  ISSUE_NUMBER: "2"
   ISSUE_TITLE: Daily dinner reminder for Xueying
   OPENAI_BASE_URL: https://api.ikuncode.cc
   OPENAI_MODEL: gpt-5.2
@@ -574,35 +575,31 @@ jobs:
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const issueNumber = Number(process.env.ISSUE_NUMBER);
             const issueTitle = process.env.ISSUE_TITLE;
             const username = process.env.TARGET_USERNAME;
             const reminderMarker = `<!-- dinner-reminder:${localDate} -->`;
 
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
+            if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+              throw new Error("ISSUE_NUMBER must be set to the stable reminder issue number.");
+            }
+
+            const existingIssue = await github.rest.issues.get({
               owner,
               repo,
-              state: "all",
-              per_page: 100,
+              issue_number: issueNumber,
             });
+            let reminderIssue = existingIssue.data;
 
-            let reminderIssue = issues.find(
-              (issue) => !issue.pull_request && issue.title === issueTitle,
-            );
+            if (reminderIssue.pull_request) {
+              throw new Error(`Configured ISSUE_NUMBER #${issueNumber} is a pull request, not an issue.`);
+            }
 
-            if (!reminderIssue) {
-              const created = await github.rest.issues.create({
-                owner,
-                repo,
-                title: issueTitle,
-                body: [
-                  "This issue is used by the scheduled reminder workflow.",
-                  `It keeps daily dinner reminders for ${targetDisplayName} in one thread.`,
-                ].join("\n\n"),
-                labels: [],
-              });
-              reminderIssue = created.data;
-              core.info(`Created reminder issue #${reminderIssue.number}`);
-            } else if (reminderIssue.state === "closed") {
+            if (reminderIssue.title !== issueTitle) {
+              core.warning(`Configured reminder issue #${issueNumber} has title "${reminderIssue.title}", expected "${issueTitle}".`);
+            }
+
+            if (reminderIssue.state === "closed") {
               const reopened = await github.rest.issues.update({
                 owner,
                 repo,
