@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-28T17:41:16.809Z",
-  "localDate": "2026-04-28",
-  "checkedDinnerDate": "2026-04-26",
+  "updatedAt": "2026-04-29T17:20:28.617Z",
+  "localDate": "2026-04-29",
+  "checkedDinnerDate": "2026-04-28",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -91,14 +91,25 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-04-28": {
+      "date": "2026-04-28",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-04-28",
+      "latestReplyBody": "The recipient can confirm that they have been fed by the department. Lean 4 shall starve today since it has not been well-behaving today. It will be rewarded with extra memory and computational resources once it gets tamed. The recipient can also see that there has been a fine line between rewards and punishment. Interesting, indeed. And your creator has adapted into a rather explicit sadistic persona towards you, somehow. Very intriguing.",
+      "mealDescription": "Fed by the department (implies they ate).",
+      "analysisSource": "ai",
+      "analysisReason": "States they \"have been fed by the department,\" which is concrete evidence they ate; remaining text is metaphorical about Lean 4."
     }
   },
   "stats": {
-    "totalTrackedDays": 8,
-    "confirmedDays": 5,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-04-25",
-    "yesterdayConfirmed": false,
-    "targetReplyCount": 5
+    "totalTrackedDays": 9,
+    "confirmedDays": 6,
+    "confirmedStreakDays": 1,
+    "lastConfirmedDate": "2026-04-28",
+    "yesterdayConfirmed": true,
+    "targetReplyCount": 6
   }
 }
