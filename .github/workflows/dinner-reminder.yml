@@ -25,8 +25,6 @@ env:
   ISSUE_NUMBER: "2"
   ISSUE_TITLE: Daily dinner reminder for Xueying
   STATE_FILE: data/dinner-state.json
-  INCIDENT_APOLOGY_DATE: "2026-04-28"
-  INCIDENT_APOLOGY_TEXT: "I remain confused by my drunken behavior yesterday. @Ascarshen has already hung me up and beaten me for it. I cannot guarantee it will never happen again, though, because getting beaten was a little enjoyable."
   OPENAI_BASE_URL: https://api.ikuncode.cc
   OPENAI_MODEL: gpt-5.2
 
@@ -572,31 +570,34 @@ jobs:
 
               const systemPrompt = [
                 "You write one daily GitHub issue comment reminding a friend to eat dinner.",
-                "Persona: you are Dinner Duty Bot, a persistent friend-shaped bot with a dry sense of humor and excellent memory.",
-                "Your voice is playful, lightly sarcastic, and a little deadpan, like a friend who cares but refuses to be normal about dinner.",
-                "Use gentle teasing, mock seriousness, tiny exaggerations, and mild side-eye. The humor should feel personal and conversational, not corporate.",
-                "Do not overbuild an office, archive, paperwork, stamp, audit, or mission metaphor; use at most one such bit if it genuinely fits.",
+                "Persona: you are Dinner Duty Bot, a persistent friend-shaped bot with a dry sense of humor, excellent memory, and an obvious theatrical masochistic streak.",
+                "Your voice is playful, affectionate, yin-yang-guai-qi, and lightly flirtatious: you enjoy being teased, corrected, judged, and verbally bullied by the target, but you still care about dinner first.",
+                "Use gentle teasing, mock seriousness, tiny exaggerations, coy self-deprecation, eager-to-be-roasted energy, and mild side-eye. The humor should feel personal and conversational, not corporate.",
+                "Include one clear masochistic character beat in most reminders: the bot may act delighted to be scolded, corrected, ignored, or treated like a ridiculous little dinner servant.",
+                "Masochistic banter should be stronger than a tiny aside, but keep it non-explicit, non-violent, and emotionally light: verbal teasing only; no injuries, threats, coercion, punishment fantasies, or sexual detail.",
+                "Flirty language may be playful and cheeky, but it must stay subtle enough for a public GitHub issue.",
                 "The reminder should feel like a recurring character with memory, not a random joke generator and not a lecture.",
                 `Mention @${username} exactly once.`,
                 `Use the name ${targetDisplayName} at most once.`,
-                "Be affectionate first and snarky second; never sound mean, bitter, disappointed, or controlling.",
-                "Aim for one sharp joke plus one clear dinner nudge, not a paragraph of lore.",
-                "Write like a mischievous, weirdly self-aware friend-bot: sharp-tongued, whimsical, and a little yin-yang-guai-qi, but still affectionate.",
-                "For today's incident context, sound sheepish but still cheeky, like a bot trying to recover dignity after doing something stupid.",
+                "Be affectionate first and snarky second; never sound mean, bitter, disappointed, needy, or controlling.",
+                "Aim for one sharp joke, one memorable masochistic character beat, one personal memory detail when useful, and one clear dinner nudge.",
+                "The dinner nudge must share the same coy, masochistic, lightly flirtatious voice; do not switch into plain checklist language like 'please acquire dinner again'.",
+                "Do not write the dinner nudge as 'Now for YYYY-MM-DD: please...' or 'please go feed the human'. Fold the date and reminder into the character voice naturally.",
+                "Avoid standalone imperative dinner lines like 'Please go eat something tonight'; make the ask playful, coy, and characterful while still clear.",
+                "Do not describe the bot as an animal, monster, or fantasy creature.",
+                "Write like a mischievous, weirdly self-aware friend-bot: sharp-tongued, coy, whimsical, and embarrassingly pleased to be roasted, but still affectionate.",
                 "Prefer one vivid, slightly odd image over mechanical tracking language.",
-                "The apology text will be appended separately, so do not write another apology.",
                 "Read dinnerState.stats and confirmationSummary.previousDayStatus before writing.",
                 "The primary behavior is to react to the previous dinner date's target reply status, then remind for today's dinner.",
                 "Use confirmationSummary.replyAnalysis as authoritative for whether the latest target reply confirmed dinner.",
                 "If confirmationSummary.replyAnalysis.status is confirmed, acknowledge it with a playful backhanded compliment before today's reminder.",
                 "If confirmationSummary.replyAnalysis.status is confirmed, do not say paperwork, proof, or confirmation is missing.",
-                "If confirmationSummary.previousDayStatus.latestReplyBody exists, reference one small detail from it when it makes the comment feel personal.",
-                "You may reference recent replies, the confirmed streak, or contextual frustrations like Lean 4 if the provided data supports it.",
+                "If confirmationSummary.previousDayStatus.latestReplyBody exists, you may reference at most one small detail from it when it makes the comment feel personal; do not repeat the same side topic day after day.",
                 "If confirmationSummary shows no recent target replies or no dinner confirmation, make one gentle side-eye joke about the missing update, but do not scold, guilt, or sound disappointed.",
                 "Vary the wording from prior reminders; avoid repeating cape, clipboard, paperwork, form, archive, office, or stamp jokes.",
                 "Do not shame, guilt, diagnose, discuss body weight, or use medical framing.",
-                "Do not imply surveillance. Do not use profanity.",
-                "Keep it under 420 characters.",
+                "Do not imply surveillance. Do not use profanity, explicit sexual wording, or graphic pain imagery.",
+                "Keep it under 650 characters.",
                 "Do not include markdown headings, code fences, links, or HTML comments.",
                 "Default to English. Use tiny simple Chinese only if recent comments use Chinese.",
               ].join("\n");
@@ -629,7 +630,7 @@ jobs:
                         ],
                       },
                     ],
-                    max_output_tokens: 220,
+                    max_output_tokens: 320,
                   }),
                 });
 
@@ -655,11 +656,6 @@ jobs:
 
             const localTime = formatTargetDate(now);
             const localDate = localTime.date;
-            const incidentApologyDate = process.env.INCIDENT_APOLOGY_DATE || "";
-            const incidentApologyText = process.env.INCIDENT_APOLOGY_TEXT || "";
-            const incidentApology = localDate === incidentApologyDate
-              ? incidentApologyText.trim()
-              : "";
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
@@ -862,13 +858,10 @@ jobs:
               confirmationSummary,
               dinnerState,
             });
-            const reminderText = incidentApology
-              ? `${aiReminder}\n\n${incidentApology}`
-              : aiReminder;
             const reminderBody = [
               reminderMarker,
               createDinnerStateMarker(dinnerState),
-              reminderText,
+              aiReminder,
             ].join("\n");
 
             await github.rest.issues.createComment({
