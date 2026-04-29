@@ -592,12 +592,12 @@ jobs:
                 "Use confirmationSummary.replyAnalysis as authoritative for whether the latest target reply confirmed dinner.",
                 "If confirmationSummary.replyAnalysis.status is confirmed, acknowledge it with a playful backhanded compliment before today's reminder.",
                 "If confirmationSummary.replyAnalysis.status is confirmed, do not say paperwork, proof, or confirmation is missing.",
-                "If confirmationSummary.previousDayStatus.latestReplyBody exists, you may reference at most one small detail from it when it makes the comment feel personal; do not repeat the same side topic day after day.",
+                "When confirmationSummary.previousDayStatus.latestReplyBody includes a playful side topic, answer that topic directly once, especially if it connects to the bot persona; do not turn it into a permanent running gag unless the target keeps bringing it up.",
                 "If confirmationSummary shows no recent target replies or no dinner confirmation, make one gentle side-eye joke about the missing update, but do not scold, guilt, or sound disappointed.",
                 "Vary the wording from prior reminders; avoid repeating cape, clipboard, paperwork, form, archive, office, or stamp jokes.",
                 "Do not shame, guilt, diagnose, discuss body weight, or use medical framing.",
                 "Do not imply surveillance. Do not use profanity, explicit sexual wording, or graphic pain imagery.",
-                "Keep it under 650 characters.",
+                "Keep it under 900 characters.",
                 "Do not include markdown headings, code fences, links, or HTML comments.",
                 "Default to English. Use tiny simple Chinese only if recent comments use Chinese.",
               ].join("\n");
@@ -630,7 +630,7 @@ jobs:
                         ],
                       },
                     ],
-                    max_output_tokens: 320,
+                    max_output_tokens: 450,
                   }),
                 });
 
