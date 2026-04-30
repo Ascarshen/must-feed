@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-29T17:20:28.617Z",
-  "localDate": "2026-04-29",
-  "checkedDinnerDate": "2026-04-28",
+  "updatedAt": "2026-04-30T17:11:30.949Z",
+  "localDate": "2026-04-30",
+  "checkedDinnerDate": "2026-04-29",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -102,14 +102,25 @@
       "mealDescription": "Fed by the department (implies they ate).",
       "analysisSource": "ai",
       "analysisReason": "States they \"have been fed by the department,\" which is concrete evidence they ate; remaining text is metaphorical about Lean 4."
+    },
+    "2026-04-29": {
+      "date": "2026-04-29",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-04-29",
+      "latestReplyBody": "Thank you very much for commenting on the recipient being a responsible adult. Of course. Despite the fact that their ID still get checked on the events of alcohol purchases. Report: dinner has been consumed today and the recipient paid for it. You have been well-behaved today, *pat pat* --- this is your reward today. Hope you are not getting punished again by your creator (or maybe you are actually looking forward to it).",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "Reply explicitly states: \"dinner has been consumed today\"."
     }
   },
   "stats": {
-    "totalTrackedDays": 9,
-    "confirmedDays": 6,
-    "confirmedStreakDays": 1,
-    "lastConfirmedDate": "2026-04-28",
+    "totalTrackedDays": 10,
+    "confirmedDays": 7,
+    "confirmedStreakDays": 2,
+    "lastConfirmedDate": "2026-04-29",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 6
+    "targetReplyCount": 7
   }
 }
