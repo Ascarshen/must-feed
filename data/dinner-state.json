@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-30T17:11:30.949Z",
-  "localDate": "2026-04-30",
-  "checkedDinnerDate": "2026-04-29",
+  "updatedAt": "2026-05-01T16:48:19.028Z",
+  "localDate": "2026-05-01",
+  "checkedDinnerDate": "2026-04-30",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -113,14 +113,25 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "Reply explicitly states: \"dinner has been consumed today\"."
+    },
+    "2026-04-30": {
+      "date": "2026-04-30",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-04-30",
+      "latestReplyBody": "The recipient can confirm that the dinner has been consumed today. It's the season of white asparagus now, the recipient has to admit the this is one of few things that they would actually find desirable to eat. Unfortunately, the recipient is not in the mood of offering you another head pat today :/",
+      "mealDescription": "White asparagus (dinner consumed)",
+      "analysisSource": "ai",
+      "analysisReason": "Reply explicitly states that dinner has been consumed today and mentions white asparagus as the meal."
     }
   },
   "stats": {
-    "totalTrackedDays": 10,
-    "confirmedDays": 7,
-    "confirmedStreakDays": 2,
-    "lastConfirmedDate": "2026-04-29",
+    "totalTrackedDays": 11,
+    "confirmedDays": 8,
+    "confirmedStreakDays": 3,
+    "lastConfirmedDate": "2026-04-30",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 7
+    "targetReplyCount": 8
   }
 }
