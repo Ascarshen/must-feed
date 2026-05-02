@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-01T16:48:19.028Z",
-  "localDate": "2026-05-01",
-  "checkedDinnerDate": "2026-04-30",
+  "updatedAt": "2026-05-02T16:38:19.854Z",
+  "localDate": "2026-05-02",
+  "checkedDinnerDate": "2026-05-01",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -124,14 +124,25 @@
       "mealDescription": "White asparagus (dinner consumed)",
       "analysisSource": "ai",
       "analysisReason": "Reply explicitly states that dinner has been consumed today and mentions white asparagus as the meal."
+    },
+    "2026-05-01": {
+      "date": "2026-05-01",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-01",
+      "latestReplyBody": "You are being rather chatty today, interesting. Log: dinner has been consumed. The recipient had a long day (@_@)",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "Reply explicitly states that dinner has been consumed, indicating they ate dinner on the localDate."
     }
   },
   "stats": {
-    "totalTrackedDays": 11,
-    "confirmedDays": 8,
-    "confirmedStreakDays": 3,
-    "lastConfirmedDate": "2026-04-30",
+    "totalTrackedDays": 12,
+    "confirmedDays": 9,
+    "confirmedStreakDays": 4,
+    "lastConfirmedDate": "2026-05-01",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 8
+    "targetReplyCount": 9
   }
 }
