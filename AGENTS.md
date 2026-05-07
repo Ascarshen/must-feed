@@ -42,6 +42,27 @@ local-only designs can be discarded.
    - For JSON data: run `jq . data/dinner-state.json` when `jq` is available.
 6. Re-check `git status --short --branch` and summarize changed files.
 
+## Local Reminder Dry Run
+
+Use this when tuning the reminder voice or prompt. The goal is to test the
+generated reminder text without posting to GitHub and without writing
+`data/dinner-state.json`.
+
+- Read the API key from the local untracked `secret` file. Never print the key
+  or commit the file.
+- Do not run the full scheduled workflow for copy tests. Instead, run a local
+  Node script that extracts the current `buildAiReminder` function from
+  `.github/workflows/dinner-reminder.yml`, mocks `core`, sets
+  `OPENAI_BASE_URL=https://api.ikuncode.cc` and `OPENAI_MODEL=gpt-5.2`, and
+  calls `buildAiReminder` with representative `confirmationSummary`,
+  `dinnerState`, and `recentComments`.
+- Run the script as a PowerShell here-string piped to Node:
+  `@' ...dry-run JS... '@ | node --input-type=module -`
+- The dry-run should print only the generated reminder and its character
+  length. It must not call GitHub issue APIs or repository content write APIs.
+- For workflow syntax checks, extract the embedded `script: |` body, wrap it in
+  `async function __github_script__() { ... }`, and pipe it to `node --check -`.
+
 ## Behavior Log
 
 Use this section to record project-level behavior decisions that future agents
