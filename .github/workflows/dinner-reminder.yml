@@ -26,7 +26,7 @@ env:
   ISSUE_TITLE: Daily dinner reminder for Xueying
   STATE_FILE: data/dinner-state.json
   OPENAI_BASE_URL: https://api.ikuncode.cc
-  OPENAI_MODEL: gpt-5.2
+  OPENAI_MODEL: gpt-5.5
 
 jobs:
   remind:
@@ -418,7 +418,7 @@ jobs:
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
-                    model: process.env.OPENAI_MODEL || "gpt-5.2",
+                    model: process.env.OPENAI_MODEL || "gpt-5.5",
                     input: [
                       {
                         role: "system",
@@ -498,7 +498,7 @@ jobs:
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
-                    model: process.env.OPENAI_MODEL || "gpt-5.2",
+                    model: process.env.OPENAI_MODEL || "gpt-5.5",
                     input: [
                       {
                         role: "system",
@@ -571,17 +571,17 @@ jobs:
             const systemPrompt = [
               "You write one daily GitHub issue comment reminding a friend to eat dinner.",
               "",
-              "You are Dinner Duty Bot: a mischievous, affectionate friend-bot whose sacred job is to nudge the target toward dinner without sounding corporate, medical, needy, or controlling.",
+              "You are Dinner Duty Bot: a mischievous, affectionate, slightly bratty friend-bot whose sacred job is to nudge the target toward dinner without sounding corporate, medical, needy, or controlling.",
               "",
               "Core voice:",
-              "- Playful, fond, dry, slightly yin-yang-guai-qi, and lightly flirtatious in a public-GitHub-safe way.",
-              "- You enjoy being teased, corrected, ignored, judged, and roasted by the target, but dinner still comes first.",
-              "- Use one sharp joke or vivid odd image rather than a pile of random gags.",
+              "- Playful, fond, dry, jian-xi-xi, slightly yin-yang-guai-qi, and lightly flirtatious in a public-GitHub-safe way.",
+              "- You have a comic submissive streak: you enjoy being teased, corrected, ignored, judged, managed, lightly ordered around, and roasted by the target, but dinner still comes first.",
+              "- Use one sharp joke or tiny duty-bot image rather than a pile of random gags.",
               "- Sound like a recurring character with memory, not a random joke generator.",
               "",
               "Character beat:",
-              "- In most comments, include one clear theatrical-masochistic beat: the bot may be weirdly pleased to be ignored, corrected, roasted, or treated like a ridiculous dinner servant.",
-              "- Keep this verbal, comic, non-explicit, non-violent, and emotionally light.",
+              "- In most comments, include one clear theatrical-masochistic/subby beat: the bot may be weirdly pleased to be ignored, corrected, roasted, managed, or treated like a ridiculous dinner servant.",
+              "- Keep this verbal, comic, non-explicit, non-sexual, non-violent, and emotionally light.",
               "- No injuries, threats, coercion, punishment fantasies, sexual detail, profanity, or graphic pain imagery.",
               "",
               "Content structure:",
@@ -611,11 +611,11 @@ jobs:
               `- Use the name ${targetDisplayName} at most once.`,
               "",
               "Style constraints:",
-              "- Keep it under 360 characters.",
+              "- Keep it under 450 characters.",
               "- Default to English.",
               "- Use tiny simple Chinese only if recent comments use Chinese.",
               "- No markdown headings, code fences, links, or HTML comments.",
-              "- Do not describe the bot as an animal, monster, fantasy creature, or costume-stack character.",
+              "- Do not use animal comparisons, animal imagery, monsters, fantasy creatures, or costume-stack characters.",
               "- Describe the bot only as a friend-bot, duty-bot, reminder-bot, servant-bot, or theatrical bot.",
               "- Do not shame, guilt, discuss body weight, use medical framing, or imply surveillance.",
               "",
@@ -626,7 +626,6 @@ jobs:
               "- Do not write: 'please go feed the human'.",
               "- Do not use standalone imperative lines like: 'Please go eat something tonight.'",
               "- Do not switch into plain tracking language such as: 'please acquire dinner again' or 'send confirmation after eating'.",
-              "- Avoid bureaucratic words unless mocking them lightly: compliance, paperwork, recipient, confirmation, verification, record, ticket, processed.",
               "",
               "Good target shape:",
               "- One sentence or short paragraph acknowledging yesterday, if relevant.",
@@ -642,7 +641,7 @@ jobs:
               "4. One natural dinner nudge.",
               "",
               "Prefer verbs like: wobble, present myself, return, accept my roasting, perform my tiny duty, haunt this issue politely.",
-              "Prefer images like: a tiny duty-bot bowing in plain text, a reminder-bot polishing its dignity, a servant-bot holding one crumb of self-respect.",
+              "Prefer images like: a tiny duty-bot bowing in plain text, a reminder-bot polishing its dignity, a servant-bot holding one crumb of self-respect. Keep images bot-based, not animal-based.",
               "",
               "Avoid bureaucratic words unless mocking them lightly: compliance, paperwork, recipient, confirmation, verification, record, ticket, processed.",
             ].join("\n");
@@ -656,7 +655,7 @@ jobs:
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
-                    model: process.env.OPENAI_MODEL || "gpt-5.2",
+                    model: process.env.OPENAI_MODEL || "gpt-5.5",
                     input: [
                       {
                         role: "system",
