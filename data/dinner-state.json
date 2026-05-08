@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-07T17:42:37.155Z",
-  "localDate": "2026-05-07",
-  "checkedDinnerDate": "2026-05-06",
+  "updatedAt": "2026-05-08T17:05:16.646Z",
+  "localDate": "2026-05-08",
+  "checkedDinnerDate": "2026-05-07",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -190,14 +190,26 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly states that the recipient has consumed dinner."
+    },
+    "2026-05-07": {
+      "date": "2026-05-07",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-07",
+      "latestReplyBody": "The recipient had a wonderful dinner in Vienna. ps: you seem to be better tuned by your creator :))",
+      "mealDescription": "wonderful dinner in Vienna",
+      "analysisSource": "ai",
+      "analysisReason": "The reply states that the recipient had a wonderful dinner in Vienna, which is clear evidence that dinner was eaten."
     }
   },
+  "imageByDate": {},
   "stats": {
-    "totalTrackedDays": 17,
-    "confirmedDays": 12,
-    "confirmedStreakDays": 1,
-    "lastConfirmedDate": "2026-05-06",
+    "totalTrackedDays": 18,
+    "confirmedDays": 13,
+    "confirmedStreakDays": 2,
+    "lastConfirmedDate": "2026-05-07",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 12
+    "targetReplyCount": 13
   }
 }
