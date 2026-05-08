@@ -53,13 +53,19 @@ generated reminder text without posting to GitHub and without writing
 - Do not run the full scheduled workflow for copy tests. Instead, run a local
   Node script that extracts the current `buildAiReminder` function from
   `.github/workflows/dinner-reminder.yml`, mocks `core`, sets
-  `OPENAI_BASE_URL=https://api.ikuncode.cc` and `OPENAI_MODEL=gpt-5.2`, and
+  `OPENAI_BASE_URL=https://api.ikuncode.cc` and `OPENAI_MODEL=gpt-5.5`, and
   calls `buildAiReminder` with representative `confirmationSummary`,
   `dinnerState`, and `recentComments`.
 - Run the script as a PowerShell here-string piped to Node:
   `@' ...dry-run JS... '@ | node --input-type=module -`
 - The dry-run should print only the generated reminder and its character
   length. It must not call GitHub issue APIs or repository content write APIs.
+- For image prompt tests, write local outputs under `image-dry-runs/` and use
+  `assets/dinner-duty-bot-reference.jpg` only as the bot identity/style
+  reference. Do not post test images to GitHub.
+- Production reminder images are saved by the workflow under
+  `generated/dinner-duty-bot/` and embedded in the same issue comment as the
+  daily text reminder.
 - For workflow syntax checks, extract the embedded `script: |` body, wrap it in
   `async function __github_script__() { ... }`, and pipe it to `node --check -`.
 
@@ -73,3 +79,6 @@ should respect. Keep entries short and factual.
   state.
 - 2026-04-29: Scheduled runs may trigger multiple times per UTC day, but the
   workflow should post at most once per Denmark local date.
+- 2026-05-08: Reminder images are generated in a second API call after the text
+  reminder. If image generation or image saving fails, the workflow should still
+  post the text reminder and update dinner state.

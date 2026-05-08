@@ -25,6 +25,8 @@ env:
   ISSUE_NUMBER: "2"
   ISSUE_TITLE: Daily dinner reminder for Xueying
   STATE_FILE: data/dinner-state.json
+  BOT_REFERENCE_IMAGE: assets/dinner-duty-bot-reference.jpg
+  IMAGE_OUTPUT_DIR: generated/dinner-duty-bot
   OPENAI_BASE_URL: https://api.ikuncode.cc
   OPENAI_MODEL: gpt-5.5
 
@@ -698,6 +700,225 @@ jobs:
               }
             }
 
+            function guessImageMimeType(path) {
+              const normalized = (path || "").toLowerCase();
+              if (normalized.endsWith(".png")) {
+                return "image/png";
+              }
+              if (normalized.endsWith(".webp")) {
+                return "image/webp";
+              }
+              return "image/jpeg";
+            }
+
+            function encodeRawPath(path) {
+              return path
+                .split("/")
+                .filter(Boolean)
+                .map((part) => encodeURIComponent(part))
+                .join("/");
+            }
+
+            function extractGeneratedImage(responseJson) {
+              const imageCall = (responseJson.output || []).find((item) =>
+                item.type === "image_generation_call" && item.result
+              );
+              return imageCall?.result || null;
+            }
+
+            async function readReferenceImage({ owner, repo, path }) {
+              const response = await github.rest.repos.getContent({
+                owner,
+                repo,
+                path,
+              });
+
+              if (Array.isArray(response.data) || response.data.type !== "file") {
+                throw new Error(`Reference image path ${path} is not a file.`);
+              }
+
+              return {
+                contentBase64: (response.data.content || "").replace(/\s+/g, ""),
+                mimeType: guessImageMimeType(path),
+              };
+            }
+
+            async function writeGeneratedImageFile({ owner, repo, path, contentBase64, message }) {
+              let sha = null;
+              try {
+                const existing = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path,
+                });
+                if (!Array.isArray(existing.data) && existing.data.type === "file") {
+                  sha = existing.data.sha;
+                }
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
+                }
+              }
+
+              const request = {
+                owner,
+                repo,
+                path,
+                message,
+                content: contentBase64,
+              };
+
+              if (sha) {
+                request.sha = sha;
+              }
+
+              const response = await github.rest.repos.createOrUpdateFileContents(request);
+              return response.data.commit.sha;
+            }
+
+            function buildReminderImagePrompt({ localDate, aiReminder, confirmationSummary, dinnerState, recentComments }) {
+              const promptData = {
+                localDate,
+                aiReminder,
+                confirmationSummary,
+                dinnerState,
+                recentComments,
+              };
+
+              return [
+                "Use the reference image only to keep Dinner Duty Bot recognizable, not to copy its exact expression or scene.",
+                "Preserve the character identity: small tracked robot body, rectangular screen face, cyan-on-black screen expression language, heart antenna, compact tracked base, simple segmented robot arms, and very simple two-prong claw grippers.",
+                "",
+                "Generate one square illustration that visually matches the exact daily bot reply and the same dinner status in the context below.",
+                "The scene should come from the reply, the target's recent tone, and the dinner status; do not reuse the reference image's kitchen, pose, props, lighting, or composition unless the reply itself calls for that.",
+                "If the target reply or mealDescription mentions a location, food, event, mood, or side topic, make that detail drive the setting and visual joke.",
+                "Avoid falling back to a generic home kitchen or plain dinner table unless the context itself points there.",
+                "",
+                "Expression logic:",
+                "- Choose the bot's screen-face expression from dinner status and reply tone.",
+                "- Confirmed dinner may look smug, bashful, wounded-proud, delighted-to-be-roasted, or mock-dignified.",
+                "- Missing or unconfirmed dinner should look deflated, worried, and a little sad, but still affectionate and slightly bratty.",
+                "- Never make the bot look angry, blaming, manipulative, melodramatic, or guilt-tripping.",
+                "- The face must stay cyan-on-black and simple, using eyes, brows, and mouth only. Do not always use the same half-lidded smirk.",
+                "",
+                "Personality-to-image direction:",
+                "- The image should match the reply's voice: jian-xi-xi, dry, fond, caring, mock-dignified, roastable, and lightly subby in a public-safe comic way.",
+                "- Show personality through expression, posture, composition, and dinner setting, not explanatory labels.",
+                "",
+                "Prop logic:",
+                "- Use at most one small prop only if the actual bot reply contains a concrete visual metaphor.",
+                "- Do not force recurring props. Do not include crumbs, medals, clipboards, forms, capes, paperwork, stamps, or symbolic trophies unless the reply explicitly mentions them.",
+                "",
+                "Hand rule:",
+                "- Both hands are identical simple two-piece pincer claw grippers with clean mechanical joints.",
+                "- No human fingers, many-fingered hands, complex claws, or detailed prosthetic hands.",
+                "",
+                "Visual style:",
+                "- Adult animated sci-fi sitcom look, bold clean outlines, flat cel-shaded colors, simplified shapes, awkward rubbery pose, slightly grotesque but charming expression, dry absurd humor, crisp 2D TV-animation frame.",
+                "- Less polished postcard beauty; more offbeat sitcom timing and ugly-funny vulnerability.",
+                "- Do not reference or imitate any specific existing show, franchise, characters, logo, or title.",
+                "- Not painterly, photorealistic, anime, 3D, or glossy mascot art.",
+                "",
+                "Constraints:",
+                "- No animal, monster, fantasy creature, costume-stack, violence, sexual content, BDSM gear, medical framing, surveillance imagery, UI screenshot, markdown, guilt-trip symbols, crying tears, or large readable text.",
+                "- If any text appears, it should be minimal, incidental, and not central.",
+                "",
+                "Context:",
+                JSON.stringify(promptData, null, 2),
+              ].join("\n");
+            }
+
+            async function buildReminderImage({ owner, repo, localDate, aiReminder, confirmationSummary, dinnerState, recentComments }) {
+              const apiKey = process.env.OPENAI_API_KEY;
+              if (!apiKey) {
+                core.info("OPENAI_API_KEY is not configured; skipping reminder image generation.");
+                return null;
+              }
+
+              const referenceImagePath = process.env.BOT_REFERENCE_IMAGE || "assets/dinner-duty-bot-reference.jpg";
+              const outputDir = (process.env.IMAGE_OUTPUT_DIR || "generated/dinner-duty-bot").replace(/\/+$/, "");
+              const imagePath = `${outputDir}/${localDate}.png`;
+
+              try {
+                const referenceImage = await readReferenceImage({
+                  owner,
+                  repo,
+                  path: referenceImagePath,
+                });
+                const baseUrl = (process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+                const response = await fetch(`${baseUrl}/v1/responses`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: process.env.OPENAI_MODEL || "gpt-5.5",
+                    input: [
+                      {
+                        role: "user",
+                        content: [
+                          {
+                            type: "input_text",
+                            text: buildReminderImagePrompt({
+                              localDate,
+                              aiReminder,
+                              confirmationSummary,
+                              dinnerState,
+                              recentComments,
+                            }),
+                          },
+                          {
+                            type: "input_image",
+                            image_url: `data:${referenceImage.mimeType};base64,${referenceImage.contentBase64}`,
+                          },
+                        ],
+                      },
+                    ],
+                    tools: [
+                      {
+                        type: "image_generation",
+                        size: "1024x1024",
+                        quality: "low",
+                      },
+                    ],
+                  }),
+                });
+
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  core.warning(`Reminder image request failed (${response.status}): ${errorText.slice(0, 500)}`);
+                  return null;
+                }
+
+                const responseJson = await response.json();
+                const imageBase64 = extractGeneratedImage(responseJson);
+                if (!imageBase64) {
+                  core.warning("Reminder image response did not contain a generated image.");
+                  return null;
+                }
+
+                const commitSha = await writeGeneratedImageFile({
+                  owner,
+                  repo,
+                  path: imagePath,
+                  contentBase64: imageBase64,
+                  message: `Add dinner bot image for ${localDate}`,
+                });
+                const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${commitSha}/${encodeRawPath(imagePath)}`;
+                core.info(`Saved reminder image to ${imagePath} at ${commitSha}`);
+
+                return {
+                  path: imagePath,
+                  url: rawUrl,
+                  markdown: `![Dinner Duty Bot ${localDate}](${rawUrl})`,
+                };
+              } catch (error) {
+                core.warning(`Reminder image generation failed: ${error.message}`);
+                return null;
+              }
+            }
+
             const localTime = formatTargetDate(now);
             const localDate = localTime.date;
 
@@ -866,6 +1087,13 @@ jobs:
               .map(([date]) => date)
               .sort();
             const confirmedStreakDays = calculateConfirmedStreak(dinnerByDate, yesterday);
+            const imageByDate = {
+              ...(
+                latestSavedState?.imageByDate && typeof latestSavedState.imageByDate === "object"
+                  ? latestSavedState.imageByDate
+                  : {}
+              ),
+            };
 
             const confirmationSummary = {
               checkedDinnerDate: latestReminderDate,
@@ -884,6 +1112,7 @@ jobs:
               localDate,
               checkedDinnerDate: latestReminderDate,
               dinnerByDate,
+              imageByDate,
               stats: {
                 totalTrackedDays: Object.keys(dinnerByDate).length,
                 confirmedDays: confirmedDates.length,
@@ -893,7 +1122,6 @@ jobs:
                 targetReplyCount: targetComments.length,
               },
             };
-            core.info(`Dinner state: ${JSON.stringify(dinnerState)}`);
             const recentComments = comments.slice(-12).map(compactComment);
             const aiReminder = await buildAiReminder({
               username,
@@ -902,11 +1130,34 @@ jobs:
               confirmationSummary,
               dinnerState,
             });
-            const reminderBody = [
+
+            const reminderImage = await buildReminderImage({
+              owner,
+              repo,
+              localDate,
+              aiReminder,
+              confirmationSummary,
+              dinnerState,
+              recentComments,
+            });
+            if (reminderImage) {
+              imageByDate[localDate] = {
+                path: reminderImage.path,
+                url: reminderImage.url,
+                generatedAt: now.toISOString(),
+              };
+            }
+
+            core.info(`Dinner state: ${JSON.stringify(dinnerState)}`);
+            const reminderBodyParts = [
               reminderMarker,
               createDinnerStateMarker(dinnerState),
               aiReminder,
-            ].join("\n");
+            ];
+            if (reminderImage) {
+              reminderBodyParts.push("", reminderImage.markdown);
+            }
+            const reminderBody = reminderBodyParts.join("\n");
 
             await github.rest.issues.createComment({
               owner,
