@@ -1,9 +1,21 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-09T03:26:04.195Z",
+  "updatedAt": "2026-05-09T03:39:45.378Z",
   "localDate": "2026-05-09",
-  "checkedDinnerDate": null,
-  "dinnerByDate": {},
+  "checkedDinnerDate": "2026-05-09",
+  "dinnerByDate": {
+    "2026-05-09": {
+      "date": "2026-05-09",
+      "status": "no_reply",
+      "confirmed": false,
+      "replyCount": 0,
+      "latestReplyDate": null,
+      "latestReplyBody": null,
+      "mealDescription": null,
+      "analysisSource": "none",
+      "analysisReason": "No target replies since the latest reminder."
+    }
+  },
   "imageByDate": {
     "2026-05-09": {
       "path": "generated/dinner-duty-bot-test/issue-8/2026-05-09.png",
@@ -12,7 +24,7 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 0,
+    "totalTrackedDays": 1,
     "confirmedDays": 0,
     "confirmedStreakDays": 0,
     "lastConfirmedDate": null,
