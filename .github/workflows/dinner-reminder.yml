@@ -126,7 +126,7 @@ jobs:
             }
 
             function getReminderDate(body) {
-              const match = /<!--\s*dinner-reminder:(\d{4}-\d{2}-\d{2})\s*-->/.exec(body || "");
+              const match = /<!--\s*dinner-reminder(?:-test)?:(\d{4}-\d{2}-\d{2})(?::[^>\s]+)?\s*-->/.exec(body || "");
               return match ? match[1] : null;
             }
 
@@ -1069,7 +1069,10 @@ jobs:
             const issueTitle = process.env.ISSUE_TITLE;
             const username = process.env.TARGET_USERNAME;
             const stateFilePath = process.env.STATE_FILE || "data/dinner-state.json";
-            const reminderMarker = `<!-- dinner-reminder:${localDate} -->`;
+            const isBranchImageTest = contentBranch === "codex/image-generation-action-test";
+            const reminderMarker = isBranchImageTest
+              ? `<!-- dinner-reminder-test:${localDate}:${context.runId} -->`
+              : `<!-- dinner-reminder:${localDate} -->`;
 
             if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
               throw new Error("ISSUE_NUMBER must be set to the stable reminder issue number.");

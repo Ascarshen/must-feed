@@ -75,7 +75,9 @@ generated reminder text without posting to GitHub and without writing
   use the workflow's current branch so branch tests do not write to `main`.
 - The temporary `codex/image-generation-action-test` branch may use a branch-only
   push trigger that targets issue #8 and `@Ascarshen`; remove that test trigger
-  before merging the workflow back to `main`.
+  before merging the workflow back to `main`. That branch may use run-scoped
+  `dinner-reminder-test` markers so repeated same-day image tests do not trip
+  the production "posted once per local date" guard.
 - For workflow syntax checks, extract the embedded `script: |` body, wrap it in
   `async function __github_script__() { ... }`, and pipe it to `node --check -`.
 
