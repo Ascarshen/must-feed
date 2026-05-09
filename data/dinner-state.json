@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-08T17:05:16.646Z",
-  "localDate": "2026-05-08",
-  "checkedDinnerDate": "2026-05-07",
+  "updatedAt": "2026-05-09T16:43:15.645Z",
+  "localDate": "2026-05-09",
+  "checkedDinnerDate": "2026-05-08",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -201,15 +201,26 @@
       "mealDescription": "wonderful dinner in Vienna",
       "analysisSource": "ai",
       "analysisReason": "The reply states that the recipient had a wonderful dinner in Vienna, which is clear evidence that dinner was eaten."
+    },
+    "2026-05-08": {
+      "date": "2026-05-08",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-08",
+      "latestReplyBody": "The recipient is still in Vienna. The asparagus season is a gift. The recipient had a great dinner. ps: Now I actually like you more :))",
+      "mealDescription": "a great dinner in Vienna; asparagus mentioned",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says the recipient had a great dinner, with asparagus season mentioned as meal context."
     }
   },
   "imageByDate": {},
   "stats": {
-    "totalTrackedDays": 18,
-    "confirmedDays": 13,
-    "confirmedStreakDays": 2,
-    "lastConfirmedDate": "2026-05-07",
+    "totalTrackedDays": 19,
+    "confirmedDays": 14,
+    "confirmedStreakDays": 3,
+    "lastConfirmedDate": "2026-05-08",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 13
+    "targetReplyCount": 14
   }
 }
