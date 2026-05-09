@@ -9,6 +9,31 @@ on:
     - cron: "30 17 * * *"
     - cron: "0 18 * * *"
   workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to post to
+        required: false
+        default: "2"
+      issue_title:
+        description: Expected issue title
+        required: false
+        default: Daily dinner reminder for Xueying
+      target_username:
+        description: GitHub username to mention
+        required: false
+        default: XYUnknown
+      target_display_name:
+        description: Display name for the target
+        required: false
+        default: Xueying
+      state_file:
+        description: Repository path for persisted dinner state
+        required: false
+        default: data/dinner-state.json
+      image_output_dir:
+        description: Repository directory for generated images
+        required: false
+        default: generated/dinner-duty-bot
 
 concurrency:
   group: dinner-reminder
@@ -19,16 +44,18 @@ permissions:
   issues: write
 
 env:
-  TARGET_USERNAME: XYUnknown
-  TARGET_DISPLAY_NAME: Xueying
+  TARGET_USERNAME: ${{ github.event.inputs.target_username || 'XYUnknown' }}
+  TARGET_DISPLAY_NAME: ${{ github.event.inputs.target_display_name || 'Xueying' }}
   TARGET_TIME_ZONE: Europe/Copenhagen
-  ISSUE_NUMBER: "2"
-  ISSUE_TITLE: Daily dinner reminder for Xueying
-  STATE_FILE: data/dinner-state.json
+  ISSUE_NUMBER: ${{ github.event.inputs.issue_number || '2' }}
+  ISSUE_TITLE: ${{ github.event.inputs.issue_title || 'Daily dinner reminder for Xueying' }}
+  STATE_FILE: ${{ github.event.inputs.state_file || 'data/dinner-state.json' }}
   BOT_REFERENCE_IMAGE: assets/dinner-duty-bot-reference.jpg
-  IMAGE_OUTPUT_DIR: generated/dinner-duty-bot
+  IMAGE_OUTPUT_DIR: ${{ github.event.inputs.image_output_dir || 'generated/dinner-duty-bot' }}
   OPENAI_BASE_URL: https://api.ikuncode.cc
   OPENAI_MODEL: gpt-5.5
+  OPENAI_IMAGE_BASE_URL: https://api.ikuncode.cc
+  OPENAI_IMAGE_MODEL: gpt-5.5
 
 jobs:
   remind:
@@ -136,13 +163,18 @@ jobs:
               };
             }
 
-            async function readDinnerStateFile({ owner, repo, path }) {
+            async function readDinnerStateFile({ owner, repo, path, branch }) {
               try {
-                const response = await github.rest.repos.getContent({
+                const request = {
                   owner,
                   repo,
                   path,
-                });
+                };
+                if (branch) {
+                  request.ref = branch;
+                }
+
+                const response = await github.rest.repos.getContent(request);
 
                 if (Array.isArray(response.data) || response.data.type !== "file") {
                   throw new Error(`State path ${path} is not a file.`);
@@ -171,7 +203,7 @@ jobs:
               }
             }
 
-            async function writeDinnerStateFile({ owner, repo, path, sha, state }) {
+            async function writeDinnerStateFile({ owner, repo, path, sha, state, branch }) {
               const content = Buffer.from(`${JSON.stringify(state, null, 2)}\n`, "utf8").toString("base64");
               const request = {
                 owner,
@@ -183,6 +215,9 @@ jobs:
 
               if (sha) {
                 request.sha = sha;
+              }
+              if (branch) {
+                request.branch = branch;
               }
 
               const response = await github.rest.repos.createOrUpdateFileContents(request);
@@ -726,12 +761,113 @@ jobs:
               return imageCall?.result || null;
             }
 
-            async function readReferenceImage({ owner, repo, path }) {
-              const response = await github.rest.repos.getContent({
+            async function readStreamedImageGeneration(response) {
+              const decoder = new TextDecoder();
+              let buffer = "";
+              let finalResponse = null;
+              const reader = response.body?.getReader();
+              if (!reader) {
+                core.warning("Streamed reminder image response did not expose a readable body.");
+                return null;
+              }
+
+              while (true) {
+                const { value, done } = await reader.read();
+                if (done) {
+                  break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+                const events = buffer.split(/\r?\n\r?\n/);
+                buffer = events.pop() || "";
+
+                for (const event of events) {
+                  const dataLines = event
+                    .split(/\r?\n/)
+                    .filter((line) => line.startsWith("data:"))
+                    .map((line) => line.slice(5).trim())
+                    .filter(Boolean);
+
+                  for (const data of dataLines) {
+                    if (data === "[DONE]") {
+                      continue;
+                    }
+
+                    let parsed = null;
+                    try {
+                      parsed = JSON.parse(data);
+                    } catch {
+                      continue;
+                    }
+
+                    const directImage = parsed.item?.type === "image_generation_call"
+                      ? parsed.item.result
+                      : parsed.output_item?.type === "image_generation_call"
+                        ? parsed.output_item.result
+                        : null;
+                    if (directImage) {
+                      return directImage;
+                    }
+
+                    if (parsed.response) {
+                      finalResponse = parsed.response;
+                      const image = extractGeneratedImage(finalResponse);
+                      if (image) {
+                        return image;
+                      }
+                    }
+
+                    if (parsed.type === "response.failed") {
+                      core.warning(`Streamed reminder image response failed: ${JSON.stringify(parsed.error || {}).slice(0, 500)}`);
+                      return null;
+                    }
+                  }
+                }
+              }
+
+              return finalResponse ? extractGeneratedImage(finalResponse) : null;
+            }
+
+            async function requestStreamedReminderImage({ baseUrl, apiKey, requestBody }) {
+              const streamBody = {
+                ...requestBody,
+                stream: true,
+                tools: requestBody.tools.map((tool) =>
+                  tool.type === "image_generation"
+                    ? { ...tool, partial_images: 1 }
+                    : tool
+                ),
+              };
+
+              const response = await fetch(`${baseUrl}/v1/responses`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${apiKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(streamBody),
+              });
+
+              if (!response.ok) {
+                const errorText = await response.text();
+                core.warning(`Streamed reminder image request failed (${response.status}): ${errorText.slice(0, 500)}`);
+                return null;
+              }
+
+              return readStreamedImageGeneration(response);
+            }
+
+            async function readReferenceImage({ owner, repo, path, branch }) {
+              const request = {
                 owner,
                 repo,
                 path,
-              });
+              };
+              if (branch) {
+                request.ref = branch;
+              }
+
+              const response = await github.rest.repos.getContent(request);
 
               if (Array.isArray(response.data) || response.data.type !== "file") {
                 throw new Error(`Reference image path ${path} is not a file.`);
@@ -743,14 +879,19 @@ jobs:
               };
             }
 
-            async function writeGeneratedImageFile({ owner, repo, path, contentBase64, message }) {
+            async function writeGeneratedImageFile({ owner, repo, path, contentBase64, message, branch }) {
               let sha = null;
               try {
-                const existing = await github.rest.repos.getContent({
+                const existingRequest = {
                   owner,
                   repo,
                   path,
-                });
+                };
+                if (branch) {
+                  existingRequest.ref = branch;
+                }
+
+                const existing = await github.rest.repos.getContent(existingRequest);
                 if (!Array.isArray(existing.data) && existing.data.type === "file") {
                   sha = existing.data.sha;
                 }
@@ -770,6 +911,9 @@ jobs:
 
               if (sha) {
                 request.sha = sha;
+              }
+              if (branch) {
+                request.branch = branch;
               }
 
               const response = await github.rest.repos.createOrUpdateFileContents(request);
@@ -828,7 +972,7 @@ jobs:
               ].join("\n");
             }
 
-            async function buildReminderImage({ owner, repo, localDate, aiReminder, confirmationSummary, dinnerState, recentComments }) {
+            async function buildReminderImage({ owner, repo, branch, localDate, aiReminder, confirmationSummary, dinnerState, recentComments }) {
               const apiKey = process.env.OPENAI_API_KEY;
               if (!apiKey) {
                 core.info("OPENAI_API_KEY is not configured; skipping reminder image generation.");
@@ -844,55 +988,45 @@ jobs:
                   owner,
                   repo,
                   path: referenceImagePath,
+                  branch,
                 });
-                const baseUrl = (process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-                const response = await fetch(`${baseUrl}/v1/responses`, {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    model: process.env.OPENAI_MODEL || "gpt-5.5",
-                    input: [
-                      {
-                        role: "user",
-                        content: [
-                          {
-                            type: "input_text",
-                            text: buildReminderImagePrompt({
-                              localDate,
-                              aiReminder,
-                              confirmationSummary,
-                              dinnerState,
-                              recentComments,
-                            }),
-                          },
-                          {
-                            type: "input_image",
-                            image_url: `data:${referenceImage.mimeType};base64,${referenceImage.contentBase64}`,
-                          },
-                        ],
-                      },
-                    ],
-                    tools: [
-                      {
-                        type: "image_generation",
-                        size: "1024x1024",
-                        quality: "low",
-                      },
-                    ],
-                  }),
+                const baseUrl = (process.env.OPENAI_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+                const requestBody = {
+                  model: process.env.OPENAI_IMAGE_MODEL || process.env.OPENAI_MODEL || "gpt-5.5",
+                  input: [
+                    {
+                      role: "user",
+                      content: [
+                        {
+                          type: "input_text",
+                          text: buildReminderImagePrompt({
+                            localDate,
+                            aiReminder,
+                            confirmationSummary,
+                            dinnerState,
+                            recentComments,
+                          }),
+                        },
+                        {
+                          type: "input_image",
+                          image_url: `data:${referenceImage.mimeType};base64,${referenceImage.contentBase64}`,
+                        },
+                      ],
+                    },
+                  ],
+                  tools: [
+                    {
+                      type: "image_generation",
+                      size: "1024x1024",
+                      quality: "low",
+                    },
+                  ],
+                };
+                const imageBase64 = await requestStreamedReminderImage({
+                  baseUrl,
+                  apiKey,
+                  requestBody,
                 });
-
-                if (!response.ok) {
-                  const errorText = await response.text();
-                  core.warning(`Reminder image request failed (${response.status}): ${errorText.slice(0, 500)}`);
-                  return null;
-                }
-
-                const responseJson = await response.json();
-                const imageBase64 = extractGeneratedImage(responseJson);
                 if (!imageBase64) {
                   core.warning("Reminder image response did not contain a generated image.");
                   return null;
@@ -904,6 +1038,7 @@ jobs:
                   path: imagePath,
                   contentBase64: imageBase64,
                   message: `Add dinner bot image for ${localDate}`,
+                  branch,
                 });
                 const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${commitSha}/${encodeRawPath(imagePath)}`;
                 core.info(`Saved reminder image to ${imagePath} at ${commitSha}`);
@@ -924,6 +1059,9 @@ jobs:
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const contentBranch = context.ref?.startsWith("refs/heads/")
+              ? context.ref.slice("refs/heads/".length)
+              : null;
             const issueNumber = Number(process.env.ISSUE_NUMBER);
             const issueTitle = process.env.ISSUE_TITLE;
             const username = process.env.TARGET_USERNAME;
@@ -964,6 +1102,7 @@ jobs:
               owner,
               repo,
               path: stateFilePath,
+              branch: contentBranch,
             });
 
             const comments = await github.paginate(github.rest.issues.listComments, {
@@ -985,12 +1124,13 @@ jobs:
 
               if (todayState && stateFile.state?.localDate !== localDate) {
                 await writeDinnerStateFile({
-                  owner,
-                  repo,
-                  path: stateFilePath,
-                  sha: stateFile.sha,
-                  state: todayState,
-                });
+                owner,
+                repo,
+                path: stateFilePath,
+                sha: stateFile.sha,
+                state: todayState,
+                branch: contentBranch,
+              });
               }
 
               core.info(`Reminder already posted for ${localDate}`);
@@ -1131,9 +1271,36 @@ jobs:
               dinnerState,
             });
 
+            core.info(`Dinner state: ${JSON.stringify(dinnerState)}`);
+            let reminderBodyParts = [
+              reminderMarker,
+              createDinnerStateMarker(dinnerState),
+              aiReminder,
+            ];
+            let reminderBody = reminderBodyParts.join("\n");
+
+            const reminderComment = await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: reminderIssue.number,
+              body: reminderBody,
+            });
+
+            let stateFileSha = await writeDinnerStateFile({
+              owner,
+              repo,
+              path: stateFilePath,
+              sha: stateFile.sha,
+              state: dinnerState,
+              branch: contentBranch,
+            });
+
+            core.info(`Posted dinner reminder text for ${localDate}`);
+
             const reminderImage = await buildReminderImage({
               owner,
               repo,
+              branch: contentBranch,
               localDate,
               aiReminder,
               confirmationSummary,
@@ -1146,32 +1313,33 @@ jobs:
                 url: reminderImage.url,
                 generatedAt: now.toISOString(),
               };
+              dinnerState.updatedAt = new Date().toISOString();
+
+              reminderBodyParts = [
+                reminderMarker,
+                createDinnerStateMarker(dinnerState),
+                aiReminder,
+                "",
+                reminderImage.markdown,
+              ];
+              reminderBody = reminderBodyParts.join("\n");
+
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: reminderComment.data.id,
+                body: reminderBody,
+              });
+
+              stateFileSha = await writeDinnerStateFile({
+                owner,
+                repo,
+                path: stateFilePath,
+                sha: stateFileSha,
+                state: dinnerState,
+                branch: contentBranch,
+              });
+              core.info(`Attached dinner reminder image for ${localDate}`);
             }
-
-            core.info(`Dinner state: ${JSON.stringify(dinnerState)}`);
-            const reminderBodyParts = [
-              reminderMarker,
-              createDinnerStateMarker(dinnerState),
-              aiReminder,
-            ];
-            if (reminderImage) {
-              reminderBodyParts.push("", reminderImage.markdown);
-            }
-            const reminderBody = reminderBodyParts.join("\n");
-
-            await github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number: reminderIssue.number,
-              body: reminderBody,
-            });
-
-            await writeDinnerStateFile({
-              owner,
-              repo,
-              path: stateFilePath,
-              sha: stateFile.sha,
-              state: dinnerState,
-            });
 
             core.info(`Posted dinner reminder for ${localDate}`);

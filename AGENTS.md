@@ -65,7 +65,14 @@ generated reminder text without posting to GitHub and without writing
   reference. Do not post test images to GitHub.
 - Production reminder images are saved by the workflow under
   `generated/dinner-duty-bot/` and embedded in the same issue comment as the
-  daily text reminder.
+  daily text reminder. The workflow posts the text first, then generates the
+  image with streaming Responses image generation and updates the same comment
+  if the image succeeds. Image generation can use `OPENAI_IMAGE_BASE_URL` and
+  `OPENAI_IMAGE_MODEL` separately from the text reminder settings.
+- For manual Actions tests, use `workflow_dispatch` inputs instead of changing
+  production env defaults. Point test runs at a separate issue, state file, and
+  image output directory. Repository content reads and writes should explicitly
+  use the workflow's current branch so branch tests do not write to `main`.
 - For workflow syntax checks, extract the embedded `script: |` body, wrap it in
   `async function __github_script__() { ... }`, and pipe it to `node --check -`.
 
@@ -82,3 +89,9 @@ should respect. Keep entries short and factual.
 - 2026-05-08: Reminder images are generated in a second API call after the text
   reminder. If image generation or image saving fails, the workflow should still
   post the text reminder and update dinner state.
+- 2026-05-09: Image generation uses streaming Responses image generation. The
+  workflow posts text and state first, then appends the image to the same
+  comment when image generation succeeds.
+- 2026-05-09: Manual workflow dispatch supports overriding the issue number,
+  target username, target display name, state file, and image output directory
+  for isolated image-generation tests.
