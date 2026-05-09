@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-09T03:26:04.195Z",
+  "localDate": "2026-05-09",
+  "checkedDinnerDate": null,
+  "dinnerByDate": {},
+  "imageByDate": {
+    "2026-05-09": {
+      "path": "generated/dinner-duty-bot-test/issue-8/2026-05-09.png",
+      "url": "https://raw.githubusercontent.com/Ascarshen/must-feed/3e7643960c7b17229820c12ed2a5ad5958222ece/generated/dinner-duty-bot-test/issue-8/2026-05-09.png",
+      "generatedAt": "2026-05-09T03:22:23.772Z"
+    }
+  },
+  "stats": {
+    "totalTrackedDays": 0,
+    "confirmedDays": 0,
+    "confirmedStreakDays": 0,
+    "lastConfirmedDate": null,
+    "yesterdayConfirmed": false,
+    "targetReplyCount": 0
+  }
+}
