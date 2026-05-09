@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-09T03:22:23.772Z",
+  "localDate": "2026-05-09",
+  "checkedDinnerDate": null,
+  "dinnerByDate": {},
+  "imageByDate": {},
+  "stats": {
+    "totalTrackedDays": 0,
+    "confirmedDays": 0,
+    "confirmedStreakDays": 0,
+    "lastConfirmedDate": null,
+    "yesterdayConfirmed": false,
+    "targetReplyCount": 0
+  }
+}
