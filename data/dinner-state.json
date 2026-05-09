@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-09T16:43:15.645Z",
+  "updatedAt": "2026-05-09T16:47:17.269Z",
   "localDate": "2026-05-09",
   "checkedDinnerDate": "2026-05-08",
   "dinnerByDate": {
@@ -214,7 +214,13 @@
       "analysisReason": "The reply explicitly says the recipient had a great dinner, with asparagus season mentioned as meal context."
     }
   },
-  "imageByDate": {},
+  "imageByDate": {
+    "2026-05-09": {
+      "path": "generated/dinner-duty-bot/2026-05-09.png",
+      "url": "https://raw.githubusercontent.com/Ascarshen/must-feed/1c56865ecb67421840e906416f70674a9bb58590/generated/dinner-duty-bot/2026-05-09.png",
+      "generatedAt": "2026-05-09T16:43:15.645Z"
+    }
+  },
   "stats": {
     "totalTrackedDays": 19,
     "confirmedDays": 14,
