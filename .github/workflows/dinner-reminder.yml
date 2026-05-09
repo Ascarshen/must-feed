@@ -59,8 +59,6 @@ env:
   OPENAI_MODEL: gpt-5.5
   OPENAI_IMAGE_BASE_URL: https://api.ikuncode.cc
   OPENAI_IMAGE_MODEL: gpt-5.5
-  IMAGE_GENERATION_MAX_WAIT_MS: "360000"
-  IMAGE_GENERATION_POLL_INTERVAL_MS: "10000"
 
 jobs:
   remind:
@@ -168,13 +166,18 @@ jobs:
               };
             }
 
-            async function readDinnerStateFile({ owner, repo, path }) {
+            async function readDinnerStateFile({ owner, repo, path, branch }) {
               try {
-                const response = await github.rest.repos.getContent({
+                const request = {
                   owner,
                   repo,
                   path,
-                });
+                };
+                if (branch) {
+                  request.ref = branch;
+                }
+
+                const response = await github.rest.repos.getContent(request);
 
                 if (Array.isArray(response.data) || response.data.type !== "file") {
                   throw new Error(`State path ${path} is not a file.`);
@@ -203,7 +206,7 @@ jobs:
               }
             }
 
-            async function writeDinnerStateFile({ owner, repo, path, sha, state }) {
+            async function writeDinnerStateFile({ owner, repo, path, sha, state, branch }) {
               const content = Buffer.from(`${JSON.stringify(state, null, 2)}\n`, "utf8").toString("base64");
               const request = {
                 owner,
@@ -215,6 +218,9 @@ jobs:
 
               if (sha) {
                 request.sha = sha;
+              }
+              if (branch) {
+                request.branch = branch;
               }
 
               const response = await github.rest.repos.createOrUpdateFileContents(request);
@@ -758,49 +764,6 @@ jobs:
               return imageCall?.result || null;
             }
 
-            function sleep(ms) {
-              return new Promise((resolve) => setTimeout(resolve, ms));
-            }
-
-            async function pollBackgroundResponse({ baseUrl, apiKey, responseId }) {
-              const maxWaitMs = Number(process.env.IMAGE_GENERATION_MAX_WAIT_MS || 360000);
-              const pollIntervalMs = Number(process.env.IMAGE_GENERATION_POLL_INTERVAL_MS || 10000);
-              const deadline = Date.now() + maxWaitMs;
-
-              while (Date.now() < deadline) {
-                await sleep(pollIntervalMs);
-
-                const response = await fetch(`${baseUrl}/v1/responses/${responseId}`, {
-                  method: "GET",
-                  headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                  },
-                });
-
-                if (!response.ok) {
-                  const errorText = await response.text();
-                  core.warning(`Reminder image polling failed (${response.status}): ${errorText.slice(0, 500)}`);
-                  return null;
-                }
-
-                const responseJson = await response.json();
-                const status = responseJson.status || "unknown";
-                core.info(`Reminder image response ${responseId} status: ${status}`);
-
-                if (status === "completed") {
-                  return responseJson;
-                }
-
-                if (["failed", "cancelled", "incomplete"].includes(status)) {
-                  core.warning(`Reminder image response ${responseId} ended with status ${status}.`);
-                  return responseJson;
-                }
-              }
-
-              core.warning(`Reminder image response ${responseId} did not complete within ${maxWaitMs}ms.`);
-              return null;
-            }
-
             async function readStreamedImageGeneration(response) {
               const decoder = new TextDecoder();
               let buffer = "";
@@ -878,8 +841,6 @@ jobs:
                     : tool
                 ),
               };
-              delete streamBody.background;
-              delete streamBody.store;
 
               const response = await fetch(`${baseUrl}/v1/responses`, {
                 method: "POST",
@@ -899,12 +860,17 @@ jobs:
               return readStreamedImageGeneration(response);
             }
 
-            async function readReferenceImage({ owner, repo, path }) {
-              const response = await github.rest.repos.getContent({
+            async function readReferenceImage({ owner, repo, path, branch }) {
+              const request = {
                 owner,
                 repo,
                 path,
-              });
+              };
+              if (branch) {
+                request.ref = branch;
+              }
+
+              const response = await github.rest.repos.getContent(request);
 
               if (Array.isArray(response.data) || response.data.type !== "file") {
                 throw new Error(`Reference image path ${path} is not a file.`);
@@ -916,14 +882,19 @@ jobs:
               };
             }
 
-            async function writeGeneratedImageFile({ owner, repo, path, contentBase64, message }) {
+            async function writeGeneratedImageFile({ owner, repo, path, contentBase64, message, branch }) {
               let sha = null;
               try {
-                const existing = await github.rest.repos.getContent({
+                const existingRequest = {
                   owner,
                   repo,
                   path,
-                });
+                };
+                if (branch) {
+                  existingRequest.ref = branch;
+                }
+
+                const existing = await github.rest.repos.getContent(existingRequest);
                 if (!Array.isArray(existing.data) && existing.data.type === "file") {
                   sha = existing.data.sha;
                 }
@@ -943,6 +914,9 @@ jobs:
 
               if (sha) {
                 request.sha = sha;
+              }
+              if (branch) {
+                request.branch = branch;
               }
 
               const response = await github.rest.repos.createOrUpdateFileContents(request);
@@ -1001,7 +975,7 @@ jobs:
               ].join("\n");
             }
 
-            async function buildReminderImage({ owner, repo, localDate, aiReminder, confirmationSummary, dinnerState, recentComments }) {
+            async function buildReminderImage({ owner, repo, branch, localDate, aiReminder, confirmationSummary, dinnerState, recentComments }) {
               const apiKey = process.env.OPENAI_API_KEY;
               if (!apiKey) {
                 core.info("OPENAI_API_KEY is not configured; skipping reminder image generation.");
@@ -1017,6 +991,7 @@ jobs:
                   owner,
                   repo,
                   path: referenceImagePath,
+                  branch,
                 });
                 const baseUrl = (process.env.OPENAI_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
                 const requestBody = {
@@ -1049,47 +1024,12 @@ jobs:
                       quality: "low",
                     },
                   ],
-                  background: true,
-                  store: true,
                 };
-                const response = await fetch(`${baseUrl}/v1/responses`, {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(requestBody),
+                const imageBase64 = await requestStreamedReminderImage({
+                  baseUrl,
+                  apiKey,
+                  requestBody,
                 });
-
-                let imageBase64 = null;
-                if (!response.ok) {
-                  const errorText = await response.text();
-                  core.warning(`Reminder image request failed (${response.status}): ${errorText.slice(0, 500)}`);
-                  if (response.status === 524 || response.status >= 500) {
-                    core.info("Retrying reminder image generation with streaming fallback.");
-                    imageBase64 = await requestStreamedReminderImage({
-                      baseUrl,
-                      apiKey,
-                      requestBody,
-                    });
-                  }
-                  if (!imageBase64) {
-                    return null;
-                  }
-                }
-
-                if (!imageBase64) {
-                  let responseJson = await response.json();
-                  const immediateImage = extractGeneratedImage(responseJson);
-                  if (!immediateImage && responseJson.id) {
-                    responseJson = await pollBackgroundResponse({
-                      baseUrl,
-                      apiKey,
-                      responseId: responseJson.id,
-                    }) || responseJson;
-                  }
-                  imageBase64 = extractGeneratedImage(responseJson);
-                }
                 if (!imageBase64) {
                   core.warning("Reminder image response did not contain a generated image.");
                   return null;
@@ -1101,6 +1041,7 @@ jobs:
                   path: imagePath,
                   contentBase64: imageBase64,
                   message: `Add dinner bot image for ${localDate}`,
+                  branch,
                 });
                 const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${commitSha}/${encodeRawPath(imagePath)}`;
                 core.info(`Saved reminder image to ${imagePath} at ${commitSha}`);
@@ -1121,6 +1062,9 @@ jobs:
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const contentBranch = context.ref?.startsWith("refs/heads/")
+              ? context.ref.slice("refs/heads/".length)
+              : null;
             const issueNumber = Number(process.env.ISSUE_NUMBER);
             const issueTitle = process.env.ISSUE_TITLE;
             const username = process.env.TARGET_USERNAME;
@@ -1161,6 +1105,7 @@ jobs:
               owner,
               repo,
               path: stateFilePath,
+              branch: contentBranch,
             });
 
             const comments = await github.paginate(github.rest.issues.listComments, {
@@ -1182,12 +1127,13 @@ jobs:
 
               if (todayState && stateFile.state?.localDate !== localDate) {
                 await writeDinnerStateFile({
-                  owner,
-                  repo,
-                  path: stateFilePath,
-                  sha: stateFile.sha,
-                  state: todayState,
-                });
+                owner,
+                repo,
+                path: stateFilePath,
+                sha: stateFile.sha,
+                state: todayState,
+                branch: contentBranch,
+              });
               }
 
               core.info(`Reminder already posted for ${localDate}`);
@@ -1349,6 +1295,7 @@ jobs:
               path: stateFilePath,
               sha: stateFile.sha,
               state: dinnerState,
+              branch: contentBranch,
             });
 
             core.info(`Posted dinner reminder text for ${localDate}`);
@@ -1356,6 +1303,7 @@ jobs:
             const reminderImage = await buildReminderImage({
               owner,
               repo,
+              branch: contentBranch,
               localDate,
               aiReminder,
               confirmationSummary,
@@ -1392,6 +1340,7 @@ jobs:
                 path: stateFilePath,
                 sha: stateFileSha,
                 state: dinnerState,
+                branch: contentBranch,
               });
               core.info(`Attached dinner reminder image for ${localDate}`);
             }
