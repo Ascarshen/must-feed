@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-10T16:47:50.895Z",
-  "localDate": "2026-05-10",
-  "checkedDinnerDate": "2026-05-09",
+  "updatedAt": "2026-05-11T17:50:00.322Z",
+  "localDate": "2026-05-11",
+  "checkedDinnerDate": "2026-05-10",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -223,6 +223,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says the dinner has been consumed and was enjoyable."
+    },
+    "2026-05-10": {
+      "date": "2026-05-10",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-10",
+      "latestReplyBody": "The recipient can confirm that dinner has been consumed in Vienna. Beef goulash is nice (^w^) ps: the image of you is cute :))",
+      "mealDescription": "Beef goulash in Vienna",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly states that dinner has been consumed and names the meal as beef goulash."
     }
   },
   "imageByDate": {
@@ -238,11 +249,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 20,
-    "confirmedDays": 15,
-    "confirmedStreakDays": 4,
-    "lastConfirmedDate": "2026-05-09",
+    "totalTrackedDays": 21,
+    "confirmedDays": 16,
+    "confirmedStreakDays": 5,
+    "lastConfirmedDate": "2026-05-10",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 15
+    "targetReplyCount": 16
   }
 }
