@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-12T17:58:11.745Z",
-  "localDate": "2026-05-12",
-  "checkedDinnerDate": "2026-05-11",
+  "updatedAt": "2026-05-13T17:56:15.348Z",
+  "localDate": "2026-05-13",
+  "checkedDinnerDate": "2026-05-12",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -245,6 +245,17 @@
       "mealDescription": "dinner at the train station",
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner has been consumed at the train station."
+    },
+    "2026-05-12": {
+      "date": "2026-05-12",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-12",
+      "latestReplyBody": "The recipient had dinner with an old friend. Thank you for your service. ps: you are dramatically cute (^w^)",
+      "mealDescription": "dinner with an old friend",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says the recipient had dinner, which confirms dinner for the localDate."
     }
   },
   "imageByDate": {
@@ -270,11 +281,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 22,
-    "confirmedDays": 17,
-    "confirmedStreakDays": 6,
-    "lastConfirmedDate": "2026-05-11",
+    "totalTrackedDays": 23,
+    "confirmedDays": 18,
+    "confirmedStreakDays": 7,
+    "lastConfirmedDate": "2026-05-12",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 17
+    "targetReplyCount": 18
   }
 }
