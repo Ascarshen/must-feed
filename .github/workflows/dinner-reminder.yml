@@ -298,38 +298,29 @@ jobs:
             }
 
             function fallbackReminder(username, localDate, confirmationSummary) {
-              const titles = [
-                "Dinner Bureau Case Officer",
-                "Certified Bowl Participant",
-                "Rice Compliance Specialist",
-                "Soup Court Witness",
-                "Evening Meal Field Agent",
-              ];
-              const missions = [
-                "eat something that required a bowl, plate, or actual cooking",
-                "submit one credible meal to the evening record",
-                "make snacks supporting evidence, not the main report",
-                "complete the ancient ritual known as dinner",
-                "acquire one warm or substantial food object",
-              ];
-              const title = seededChoice(titles, `${localDate}:title`);
-              const mission = seededChoice(missions, `${localDate}:mission`);
               const previousStatus = confirmationSummary.previousDayStatus;
-              const previousReply = previousStatus?.latestReplyBody
-                ? previousStatus.latestReplyBody.slice(0, 180)
-                : null;
-              const yesterdayLine = previousStatus?.status === "confirmed"
-                ? `Previous dinner confirmed${previousReply ? `: ${previousReply}` : "."}`
-                : "Previous dinner status is still unconfirmed.";
+              const streak = confirmationSummary.confirmedStreakDays || 0;
+              const confirmedOpeners = [
+                "yesterday's dinner survived the chaos with suspicious competence",
+                "yesterday's dinner did happen, which is rude of you to make me proud",
+                "yesterday's dinner has been accepted by this tiny duty-bot with mock dignity",
+              ];
+              const missingOpeners = [
+                "yesterday's dinner update is still doing its little vanishing act",
+                "yesterday's dinner status is fuzzy enough to make a servant-bot wobble",
+                "yesterday left this reminder-bot holding a tiny scrap of concern and no throne",
+              ];
+              const nudges = [
+                "let tonight's dinner happen before I polish my dignity into dust",
+                "give tonight one decent meal and let me stand here looking useful",
+                "eat something dinner-shaped tonight so I can be roasted with purpose",
+              ];
+              const opener = previousStatus?.status === "confirmed"
+                ? seededChoice(confirmedOpeners, `${localDate}:confirmed`)
+                : seededChoice(missingOpeners, `${localDate}:missing`);
+              const nudge = seededChoice(nudges, `${localDate}:nudge`);
 
-              return [
-                `@${username} ${targetDisplayName}, dinner checkpoint is open.`,
-                "",
-                `Today's title: ${title}`,
-                `Mission: ${mission}.`,
-                yesterdayLine,
-                `Confirmed streak: ${confirmationSummary.confirmedStreakDays || 0} day(s).`,
-              ].join("\n");
+              return `@${username} ${targetDisplayName}, ${opener}; streak ${streak}, if my tiny arithmetic may briefly wear a smug hat. Now ${nudge}.`;
             }
 
             function extractOutputText(responseJson) {
@@ -389,6 +380,66 @@ jobs:
               };
             }
 
+            function inferReplyAnalysisFromText(replies, source) {
+              if (!replies.length) {
+                return null;
+              }
+
+              const text = replies
+                .map((reply) => reply.body || "")
+                .join("\n")
+                .toLowerCase()
+                .replace(/\s+/g, " ")
+                .trim();
+              const latestReply = replies.at(-1)?.body || "";
+
+              const deniedPatterns = [
+                /\b(skipped|missed)\s+(dinner|meal)\b/,
+                /\b(no|without)\s+(dinner|meal|food)\b/,
+                /\b(did\s+not|didn't|have\s+not|haven't|has\s+not|hasn't)\b.{0,50}\b(eat|eaten|ate|consume|consumed|have|had)\b/,
+                /\b(dinner|meal|food)\b.{0,50}\b(did\s+not|didn't|has\s+not|hasn't|was\s+not|wasn't)\b.{0,50}\b(eaten|consumed|finished|had)\b/,
+              ];
+              if (deniedPatterns.some((pattern) => pattern.test(text))) {
+                return normalizeReplyAnalysis(
+                  {
+                    status: "denied",
+                    confirmed: false,
+                    confirmationDate: "today",
+                    confidence: 0.8,
+                    reason: "Local fallback found a clear statement that dinner was not eaten.",
+                  },
+                  replies,
+                  source,
+                );
+              }
+
+              const confirmedPatterns = [
+                /\b(can\s+confirm|confirm|confirmed|log|report)\b.{0,90}\b(dinner|meal|food)\b.{0,90}\b(consumed|eaten|ate|had|finished|prepared)\b/,
+                /\b(dinner|meal|food)\b.{0,90}\b(has|have|had|was|is|been)?\s*(been\s*)?(consumed|eaten|finished|prepared)\b/,
+                /\b(had|ate|finished|consumed)\b.{0,50}\b(dinner|meal|food|goulash|asparagus|noodles|soup)\b/,
+                /\b(have|has)\s+been\s+fed\b/,
+              ];
+              if (confirmedPatterns.some((pattern) => pattern.test(text))) {
+                const mealDescription = /\b(goulash|asparagus|noodles|soup|train station|old friend|vienna)\b/i.test(latestReply)
+                  ? latestReply.slice(0, 120)
+                  : "dinner consumed";
+                return normalizeReplyAnalysis(
+                  {
+                    status: "confirmed",
+                    confirmed: true,
+                    confirmationDate: "today",
+                    mealDescription,
+                    confidence: 0.85,
+                    reason: "Local fallback found a clear dinner confirmation.",
+                  },
+                  replies,
+                  source,
+                );
+              }
+
+              return null;
+            }
+
             function fallbackReplyAnalysis(replies) {
               if (!replies.length) {
                 return normalizeReplyAnalysis(
@@ -404,6 +455,11 @@ jobs:
                 );
               }
 
+              const inferred = inferReplyAnalysisFromText(replies, "local-fallback");
+              if (inferred) {
+                return inferred;
+              }
+
               return normalizeReplyAnalysis(
                 {
                   status: "unclear",
@@ -415,6 +471,17 @@ jobs:
                 replies,
                 "llm-unavailable",
               );
+            }
+
+            function fallbackReplyDayAnalyses(groupsWithReplies) {
+              const analyses = {};
+              for (const group of groupsWithReplies) {
+                const inferred = inferReplyAnalysisFromText(group.replies, "local-history-fallback");
+                if (inferred) {
+                  analyses[group.date] = inferred;
+                }
+              }
+              return analyses;
             }
 
             async function classifyDinnerReplies({ localDate, replies }) {
@@ -506,8 +573,8 @@ jobs:
 
               const apiKey = process.env.OPENAI_API_KEY;
               if (!apiKey) {
-                core.info("OPENAI_API_KEY is not configured; historical reply statuses remain unclassified.");
-                return {};
+                core.info("OPENAI_API_KEY is not configured; using local fallback for clear historical replies.");
+                return fallbackReplyDayAnalyses(groupsWithReplies);
               }
 
               const systemPrompt = [
@@ -561,14 +628,14 @@ jobs:
                 if (!response.ok) {
                   const errorText = await response.text();
                   core.warning(`Historical reply classification request failed (${response.status}): ${errorText.slice(0, 500)}`);
-                  return {};
+                  return fallbackReplyDayAnalyses(groupsWithReplies);
                 }
 
                 const responseJson = await response.json();
                 const parsed = parseJsonObject(extractOutputText(responseJson));
                 if (!parsed || !Array.isArray(parsed.days)) {
                   core.warning("Historical reply classification response did not contain valid days JSON.");
-                  return {};
+                  return fallbackReplyDayAnalyses(groupsWithReplies);
                 }
 
                 const groupsByDate = new Map(groupsWithReplies.map((group) => [group.date, group]));
@@ -583,7 +650,7 @@ jobs:
                 return analyses;
               } catch (error) {
                 core.warning(`Historical reply classification request threw an error: ${error.message}`);
-                return {};
+                return fallbackReplyDayAnalyses(groupsWithReplies);
               }
             }
 

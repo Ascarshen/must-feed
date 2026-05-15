@@ -259,14 +259,14 @@
     },
     "2026-05-13": {
       "date": "2026-05-13",
-      "status": "unclear",
-      "confirmed": false,
+      "status": "confirmed",
+      "confirmed": true,
       "replyCount": 1,
       "latestReplyDate": "2026-05-13",
       "latestReplyBody": "The recipient can confirm that dinner has been consumed. Has been very busy _orz_",
-      "mealDescription": null,
-      "analysisSource": "llm-unavailable",
-      "analysisReason": "LLM classification was unavailable, so the reply was not guessed."
+      "mealDescription": "dinner consumed",
+      "analysisSource": "manual-correction",
+      "analysisReason": "The reply explicitly confirms that dinner has been consumed; the original LLM classification was unavailable."
     }
   },
   "imageByDate": {
@@ -303,10 +303,10 @@
   },
   "stats": {
     "totalTrackedDays": 24,
-    "confirmedDays": 18,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-05-12",
-    "yesterdayConfirmed": false,
+    "confirmedDays": 19,
+    "confirmedStreakDays": 8,
+    "lastConfirmedDate": "2026-05-13",
+    "yesterdayConfirmed": true,
     "targetReplyCount": 19
   }
 }

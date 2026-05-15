@@ -95,3 +95,6 @@ should respect. Keep entries short and factual.
 - 2026-05-09: Manual workflow dispatch supports overriding the issue number,
   target username, target display name, state file, and image output directory
   for isolated image-generation tests.
+- 2026-05-15: Reply classification has a deterministic local fallback for
+  obvious dinner confirmations/denials so API outages do not mark clear replies
+  as unclear.
