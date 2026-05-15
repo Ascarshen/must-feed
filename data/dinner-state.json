@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-14T17:45:10.840Z",
-  "localDate": "2026-05-14",
-  "checkedDinnerDate": "2026-05-13",
+  "updatedAt": "2026-05-15T17:22:53.261Z",
+  "localDate": "2026-05-15",
+  "checkedDinnerDate": "2026-05-14",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -267,6 +267,17 @@
       "mealDescription": "dinner consumed",
       "analysisSource": "manual-correction",
       "analysisReason": "The reply explicitly confirms that dinner has been consumed; the original LLM classification was unavailable."
+    },
+    "2026-05-14": {
+      "date": "2026-05-14",
+      "status": "no_reply",
+      "confirmed": false,
+      "replyCount": 0,
+      "latestReplyDate": null,
+      "latestReplyBody": null,
+      "mealDescription": null,
+      "analysisSource": "none",
+      "analysisReason": "No target replies since the latest reminder."
     }
   },
   "imageByDate": {
@@ -302,11 +313,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 24,
+    "totalTrackedDays": 25,
     "confirmedDays": 19,
-    "confirmedStreakDays": 8,
+    "confirmedStreakDays": 0,
     "lastConfirmedDate": "2026-05-13",
-    "yesterdayConfirmed": true,
+    "yesterdayConfirmed": false,
     "targetReplyCount": 19
   }
 }
