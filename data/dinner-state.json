@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-18T17:55:00.225Z",
-  "localDate": "2026-05-18",
-  "checkedDinnerDate": "2026-05-17",
+  "updatedAt": "2026-05-19T17:58:55.505Z",
+  "localDate": "2026-05-19",
+  "checkedDinnerDate": "2026-05-18",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -311,6 +311,17 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-05-18": {
+      "date": "2026-05-18",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-18",
+      "latestReplyBody": "You look sad, poor thing. Dinner has been consumed. The department is nice enough to feed the recipient.",
+      "mealDescription": "department-provided dinner",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says 'Dinner has been consumed' and indicates the department fed them, which confirms dinner on the localDate."
     }
   },
   "imageByDate": {
@@ -361,11 +372,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 28,
-    "confirmedDays": 20,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-05-16",
-    "yesterdayConfirmed": false,
-    "targetReplyCount": 20
+    "totalTrackedDays": 29,
+    "confirmedDays": 21,
+    "confirmedStreakDays": 1,
+    "lastConfirmedDate": "2026-05-18",
+    "yesterdayConfirmed": true,
+    "targetReplyCount": 21
   }
 }
