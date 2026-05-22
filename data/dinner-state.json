@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-21T17:53:29.761Z",
-  "localDate": "2026-05-21",
-  "checkedDinnerDate": "2026-05-20",
+  "updatedAt": "2026-05-22T17:45:38.067Z",
+  "localDate": "2026-05-22",
+  "checkedDinnerDate": "2026-05-21",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -344,6 +344,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The user explicitly states that dinner has been consumed, confirming they ate dinner for the dinner date being checked."
+    },
+    "2026-05-21": {
+      "date": "2026-05-21",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-21",
+      "latestReplyBody": "The recipient has consumed dinner. Thank you for your service :))",
+      "mealDescription": "dinner consumed",
+      "analysisSource": "local-fallback",
+      "analysisReason": "Local fallback found a clear dinner confirmation."
     }
   },
   "imageByDate": {
@@ -399,11 +410,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 31,
-    "confirmedDays": 23,
-    "confirmedStreakDays": 3,
-    "lastConfirmedDate": "2026-05-20",
+    "totalTrackedDays": 32,
+    "confirmedDays": 24,
+    "confirmedStreakDays": 4,
+    "lastConfirmedDate": "2026-05-21",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 23
+    "targetReplyCount": 24
   }
 }
