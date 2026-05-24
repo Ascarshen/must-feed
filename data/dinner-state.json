@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-24T16:54:03.615Z",
+  "updatedAt": "2026-05-24T16:55:30.699Z",
   "localDate": "2026-05-24",
   "checkedDinnerDate": "2026-05-23",
   "dinnerByDate": {
@@ -439,6 +439,11 @@
       "path": "generated/dinner-duty-bot/2026-05-23.png",
       "url": "https://raw.githubusercontent.com/Ascarshen/must-feed/a9e3ce12afa88e119f6bc9e41e19fca95b0478d9/generated/dinner-duty-bot/2026-05-23.png",
       "generatedAt": "2026-05-23T16:52:44.089Z"
+    },
+    "2026-05-24": {
+      "path": "generated/dinner-duty-bot/2026-05-24.png",
+      "url": "https://raw.githubusercontent.com/Ascarshen/must-feed/8f1bab6f1219841c347050e0ec47ca74c5a64d62/generated/dinner-duty-bot/2026-05-24.png",
+      "generatedAt": "2026-05-24T16:54:03.615Z"
     }
   },
   "stats": {
