@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-24T16:55:30.699Z",
-  "localDate": "2026-05-24",
-  "checkedDinnerDate": "2026-05-23",
+  "updatedAt": "2026-05-25T17:28:27.105Z",
+  "localDate": "2026-05-25",
+  "checkedDinnerDate": "2026-05-24",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -377,6 +377,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly states that dinner has been consumed."
+    },
+    "2026-05-24": {
+      "date": "2026-05-24",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-24",
+      "latestReplyBody": "The recipient had dinner. Today's life is rather boring in Denmark.",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says the recipient had dinner on the localDate."
     }
   },
   "imageByDate": {
@@ -447,11 +458,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 34,
-    "confirmedDays": 26,
-    "confirmedStreakDays": 6,
-    "lastConfirmedDate": "2026-05-23",
+    "totalTrackedDays": 35,
+    "confirmedDays": 27,
+    "confirmedStreakDays": 7,
+    "lastConfirmedDate": "2026-05-24",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 26
+    "targetReplyCount": 27
   }
 }
