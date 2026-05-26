@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-25T17:28:27.105Z",
-  "localDate": "2026-05-25",
-  "checkedDinnerDate": "2026-05-24",
+  "updatedAt": "2026-05-26T18:18:57.242Z",
+  "localDate": "2026-05-26",
+  "checkedDinnerDate": "2026-05-25",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -388,6 +388,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says the recipient had dinner on the localDate."
+    },
+    "2026-05-25": {
+      "date": "2026-05-25",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-25",
+      "latestReplyBody": "Dinner has been consumed at Københavns Lufthavn. Thank you for your service :))",
+      "mealDescription": "dinner at Københavns Lufthavn",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
     }
   },
   "imageByDate": {
@@ -458,11 +469,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 35,
-    "confirmedDays": 27,
-    "confirmedStreakDays": 7,
-    "lastConfirmedDate": "2026-05-24",
+    "totalTrackedDays": 36,
+    "confirmedDays": 28,
+    "confirmedStreakDays": 8,
+    "lastConfirmedDate": "2026-05-25",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 27
+    "targetReplyCount": 28
   }
 }
