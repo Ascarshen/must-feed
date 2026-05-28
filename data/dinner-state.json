@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-27T18:20:28.809Z",
-  "localDate": "2026-05-27",
-  "checkedDinnerDate": "2026-05-26",
+  "updatedAt": "2026-05-28T18:30:37.084Z",
+  "localDate": "2026-05-28",
+  "checkedDinnerDate": "2026-05-27",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -410,6 +410,17 @@
       "mealDescription": "dinner with a friend in Edinburgh",
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly confirms that dinner has been consumed with a friend."
+    },
+    "2026-05-27": {
+      "date": "2026-05-27",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-27",
+      "latestReplyBody": "Thank you for your service. The recipient can confirm that dinner has been consumed with another friend. Also, flowers in the garden has been tamed and fed :))",
+      "mealDescription": "dinner with another friend",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly states that dinner has been consumed."
     }
   },
   "imageByDate": {
@@ -485,11 +496,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 37,
-    "confirmedDays": 29,
-    "confirmedStreakDays": 9,
-    "lastConfirmedDate": "2026-05-26",
+    "totalTrackedDays": 38,
+    "confirmedDays": 30,
+    "confirmedStreakDays": 10,
+    "lastConfirmedDate": "2026-05-27",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 29
+    "targetReplyCount": 30
   }
 }
