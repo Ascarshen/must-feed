@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-28T18:30:37.084Z",
-  "localDate": "2026-05-28",
-  "checkedDinnerDate": "2026-05-27",
+  "updatedAt": "2026-05-29T18:27:32.483Z",
+  "localDate": "2026-05-29",
+  "checkedDinnerDate": "2026-05-28",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -421,6 +421,17 @@
       "mealDescription": "dinner with another friend",
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly states that dinner has been consumed."
+    },
+    "2026-05-28": {
+      "date": "2026-05-28",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-28",
+      "latestReplyBody": "Dinner has been consumed. Paper writing is tiring :(",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly states that dinner has been consumed on the localDate."
     }
   },
   "imageByDate": {
@@ -496,11 +507,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 38,
-    "confirmedDays": 30,
-    "confirmedStreakDays": 10,
-    "lastConfirmedDate": "2026-05-27",
+    "totalTrackedDays": 39,
+    "confirmedDays": 31,
+    "confirmedStreakDays": 11,
+    "lastConfirmedDate": "2026-05-28",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 30
+    "targetReplyCount": 31
   }
 }
