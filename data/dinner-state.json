@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-31T16:58:49.819Z",
-  "localDate": "2026-05-31",
-  "checkedDinnerDate": "2026-05-30",
+  "updatedAt": "2026-06-01T20:11:53.208Z",
+  "localDate": "2026-06-01",
+  "checkedDinnerDate": "2026-05-31",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -454,6 +454,17 @@
       "mealDescription": "dinner",
       "analysisSource": "ai",
       "analysisReason": "The user explicitly says dinner has been consumed on the localDate."
+    },
+    "2026-05-31": {
+      "date": "2026-05-31",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-05-31",
+      "latestReplyBody": "Greetings from the Edinburgh airport. Dinner has been consumed.",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
     }
   },
   "imageByDate": {
@@ -539,11 +550,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 41,
-    "confirmedDays": 32,
-    "confirmedStreakDays": 1,
-    "lastConfirmedDate": "2026-05-30",
+    "totalTrackedDays": 42,
+    "confirmedDays": 33,
+    "confirmedStreakDays": 2,
+    "lastConfirmedDate": "2026-05-31",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 32
+    "targetReplyCount": 33
   }
 }
