@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-02T19:38:58.517Z",
-  "localDate": "2026-06-02",
-  "checkedDinnerDate": "2026-06-01",
+  "updatedAt": "2026-06-03T19:42:29.278Z",
+  "localDate": "2026-06-03",
+  "checkedDinnerDate": "2026-06-02",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -476,6 +476,17 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-06-02": {
+      "date": "2026-06-02",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-06-03",
+      "latestReplyBody": "dinner has been consumed, thanks for your service :))",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed, confirming they ate, but it does not specify whether it was today or yesterday relative to the checked date."
     }
   },
   "imageByDate": {
@@ -566,11 +577,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 43,
-    "confirmedDays": 33,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-05-31",
-    "yesterdayConfirmed": false,
-    "targetReplyCount": 33
+    "totalTrackedDays": 44,
+    "confirmedDays": 34,
+    "confirmedStreakDays": 1,
+    "lastConfirmedDate": "2026-06-02",
+    "yesterdayConfirmed": true,
+    "targetReplyCount": 34
   }
 }
