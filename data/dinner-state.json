@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-08T18:23:12.544Z",
-  "localDate": "2026-06-08",
-  "checkedDinnerDate": "2026-06-07",
+  "updatedAt": "2026-06-09T17:54:01.023Z",
+  "localDate": "2026-06-09",
+  "checkedDinnerDate": "2026-06-08",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -542,6 +542,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says 'Dinner has been consumed,' confirming dinner was eaten on the localDate."
+    },
+    "2026-06-08": {
+      "date": "2026-06-08",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-06-08",
+      "latestReplyBody": "Dinner has been consumed... Eating is one of the most troublesome things can happen in one's life...",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed, confirming they ate dinner on the checked date."
     }
   },
   "imageByDate": {
@@ -657,11 +668,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 49,
-    "confirmedDays": 39,
-    "confirmedStreakDays": 6,
-    "lastConfirmedDate": "2026-06-07",
+    "totalTrackedDays": 50,
+    "confirmedDays": 40,
+    "confirmedStreakDays": 7,
+    "lastConfirmedDate": "2026-06-08",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 39
+    "targetReplyCount": 40
   }
 }
