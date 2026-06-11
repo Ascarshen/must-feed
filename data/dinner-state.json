@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-10T18:28:39.010Z",
-  "localDate": "2026-06-10",
-  "checkedDinnerDate": "2026-06-09",
+  "updatedAt": "2026-06-11T18:41:58.039Z",
+  "localDate": "2026-06-11",
+  "checkedDinnerDate": "2026-06-10",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -564,6 +564,17 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-06-10": {
+      "date": "2026-06-10",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-06-11",
+      "latestReplyBody": "ah, sorry, thanks for the reminder. the recipient managed to consume something, somehow, at some point....",
+      "mealDescription": "something",
+      "analysisSource": "ai",
+      "analysisReason": "Reply says the recipient managed to consume something, which indicates eating occurred, but the wording is vague and does not clearly tie it to today or yesterd"
     }
   },
   "imageByDate": {
@@ -689,11 +700,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 51,
-    "confirmedDays": 40,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-06-08",
-    "yesterdayConfirmed": false,
-    "targetReplyCount": 40
+    "totalTrackedDays": 52,
+    "confirmedDays": 41,
+    "confirmedStreakDays": 1,
+    "lastConfirmedDate": "2026-06-10",
+    "yesterdayConfirmed": true,
+    "targetReplyCount": 41
   }
 }
