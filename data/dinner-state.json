@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-13T17:14:20.690Z",
-  "localDate": "2026-06-13",
-  "checkedDinnerDate": "2026-06-12",
+  "updatedAt": "2026-06-14T17:12:09.624Z",
+  "localDate": "2026-06-14",
+  "checkedDinnerDate": "2026-06-13",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -597,6 +597,17 @@
       "mealDescription": "dinner consumed",
       "analysisSource": "local-fallback",
       "analysisReason": "Local fallback found a clear dinner confirmation."
+    },
+    "2026-06-13": {
+      "date": "2026-06-13",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-06-13",
+      "latestReplyBody": "Thanks for the reminder. Dinner has been consumed :))",
+      "mealDescription": "dinner consumed",
+      "analysisSource": "local-fallback",
+      "analysisReason": "Local fallback found a clear dinner confirmation."
     }
   },
   "imageByDate": {
@@ -727,11 +738,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 54,
-    "confirmedDays": 43,
-    "confirmedStreakDays": 3,
-    "lastConfirmedDate": "2026-06-12",
+    "totalTrackedDays": 55,
+    "confirmedDays": 44,
+    "confirmedStreakDays": 4,
+    "lastConfirmedDate": "2026-06-13",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 43
+    "targetReplyCount": 44
   }
 }
