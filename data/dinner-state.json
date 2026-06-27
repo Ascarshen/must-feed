@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-26T17:41:16.613Z",
-  "localDate": "2026-06-26",
-  "checkedDinnerDate": "2026-06-25",
+  "updatedAt": "2026-06-27T17:00:32.604Z",
+  "localDate": "2026-06-27",
+  "checkedDinnerDate": "2026-06-26",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -740,6 +740,17 @@
       "mealDescription": "dinner consumed",
       "analysisSource": "local-fallback",
       "analysisReason": "Local fallback found a clear dinner confirmation."
+    },
+    "2026-06-26": {
+      "date": "2026-06-26",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-06-26",
+      "latestReplyBody": "The recipient can confirm the dinner has been consumed... heat wave in denmark is disturbing :(",
+      "mealDescription": "dinner consumed",
+      "analysisSource": "local-fallback",
+      "analysisReason": "Local fallback found a clear dinner confirmation."
     }
   },
   "imageByDate": {
@@ -885,11 +896,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 67,
-    "confirmedDays": 56,
-    "confirmedStreakDays": 16,
-    "lastConfirmedDate": "2026-06-25",
+    "totalTrackedDays": 68,
+    "confirmedDays": 57,
+    "confirmedStreakDays": 17,
+    "lastConfirmedDate": "2026-06-26",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 56
+    "targetReplyCount": 57
   }
 }
