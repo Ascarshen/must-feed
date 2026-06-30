@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-29T18:07:57.557Z",
-  "localDate": "2026-06-29",
-  "checkedDinnerDate": "2026-06-28",
+  "updatedAt": "2026-06-30T17:47:14.741Z",
+  "localDate": "2026-06-30",
+  "checkedDinnerDate": "2026-06-29",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -773,6 +773,17 @@
       "mealDescription": "dinner",
       "analysisSource": "ai",
       "analysisReason": "The reply says dinner has been consumed, which directly confirms the target ate dinner on the localDate."
+    },
+    "2026-06-29": {
+      "date": "2026-06-29",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-06-29",
+      "latestReplyBody": "The roasted plant is a very accurate touch. Dinner has been consumed. Paper editing is boring and somewhat stressful (T_T)",
+      "mealDescription": "roasted plant",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says \"Dinner has been consumed\" and mentions a roasted plant as meal-related detail."
     }
   },
   "imageByDate": {
@@ -928,11 +939,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 70,
-    "confirmedDays": 59,
-    "confirmedStreakDays": 19,
-    "lastConfirmedDate": "2026-06-28",
+    "totalTrackedDays": 71,
+    "confirmedDays": 60,
+    "confirmedStreakDays": 20,
+    "lastConfirmedDate": "2026-06-29",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 59
+    "targetReplyCount": 60
   }
 }
