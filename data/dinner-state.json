@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-30T17:49:04.497Z",
-  "localDate": "2026-06-30",
-  "checkedDinnerDate": "2026-06-29",
+  "updatedAt": "2026-07-01T17:47:07.983Z",
+  "localDate": "2026-07-01",
+  "checkedDinnerDate": "2026-06-30",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -784,6 +784,17 @@
       "mealDescription": "roasted plant",
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says \"Dinner has been consumed\" and mentions a roasted plant as meal-related detail."
+    },
+    "2026-06-30": {
+      "date": "2026-06-30",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-06-30",
+      "latestReplyBody": "Dinner has been consumed and ice cream has been refilled (^w^) Thanks for the reminder.",
+      "mealDescription": "Dinner and ice cream",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed and mentions ice cream, confirming they ate on the localDate."
     }
   },
   "imageByDate": {
@@ -944,11 +955,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 71,
-    "confirmedDays": 60,
-    "confirmedStreakDays": 20,
-    "lastConfirmedDate": "2026-06-29",
+    "totalTrackedDays": 72,
+    "confirmedDays": 61,
+    "confirmedStreakDays": 21,
+    "lastConfirmedDate": "2026-06-30",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 60
+    "targetReplyCount": 61
   }
 }
