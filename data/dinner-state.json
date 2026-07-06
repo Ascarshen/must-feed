@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-05T16:58:40.636Z",
-  "localDate": "2026-07-05",
-  "checkedDinnerDate": "2026-07-04",
+  "updatedAt": "2026-07-06T18:05:42.959Z",
+  "localDate": "2026-07-06",
+  "checkedDinnerDate": "2026-07-05",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -839,6 +839,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner was consumed, confirming they ate. However, it says 'earlier today' on a reply dated the day after the provided localDate, so t"
+    },
+    "2026-07-05": {
+      "date": "2026-07-05",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-07-05",
+      "latestReplyBody": "dinner has been consumed, thanks for the reminder :))",
+      "mealDescription": "dinner",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
     }
   },
   "imageByDate": {
@@ -1014,11 +1025,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 76,
-    "confirmedDays": 65,
-    "confirmedStreakDays": 25,
-    "lastConfirmedDate": "2026-07-04",
+    "totalTrackedDays": 77,
+    "confirmedDays": 66,
+    "confirmedStreakDays": 26,
+    "lastConfirmedDate": "2026-07-05",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 65
+    "targetReplyCount": 66
   }
 }
