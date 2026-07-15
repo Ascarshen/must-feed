@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-14T17:05:12.847Z",
-  "localDate": "2026-07-14",
-  "checkedDinnerDate": "2026-07-13",
+  "updatedAt": "2026-07-15T17:07:54.096Z",
+  "localDate": "2026-07-15",
+  "checkedDinnerDate": "2026-07-14",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -938,6 +938,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
+    },
+    "2026-07-14": {
+      "date": "2026-07-14",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-07-14",
+      "latestReplyBody": "thanks for the reminder, dinner has been consumed greetings from Københavns Lufthaven (^w^)",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
     }
   },
   "imageByDate": {
@@ -1128,11 +1139,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 85,
-    "confirmedDays": 73,
-    "confirmedStreakDays": 3,
-    "lastConfirmedDate": "2026-07-13",
+    "totalTrackedDays": 86,
+    "confirmedDays": 74,
+    "confirmedStreakDays": 4,
+    "lastConfirmedDate": "2026-07-14",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 73
+    "targetReplyCount": 74
   }
 }
