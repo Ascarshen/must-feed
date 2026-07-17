@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-16T17:08:24.759Z",
-  "localDate": "2026-07-16",
-  "checkedDinnerDate": "2026-07-15",
+  "updatedAt": "2026-07-17T17:03:01.785Z",
+  "localDate": "2026-07-17",
+  "checkedDinnerDate": "2026-07-16",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -960,6 +960,17 @@
       "mealDescription": "dinner",
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner has been consumed on the local dinner date."
+    },
+    "2026-07-16": {
+      "date": "2026-07-16",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-07-17",
+      "latestReplyBody": "Dinner has been consumed with a friend (^w^)",
+      "mealDescription": "dinner with a friend",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner was consumed and adds concrete context that it was with a friend."
     }
   },
   "imageByDate": {
@@ -1155,11 +1166,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 87,
-    "confirmedDays": 75,
-    "confirmedStreakDays": 5,
-    "lastConfirmedDate": "2026-07-15",
+    "totalTrackedDays": 88,
+    "confirmedDays": 76,
+    "confirmedStreakDays": 6,
+    "lastConfirmedDate": "2026-07-16",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 75
+    "targetReplyCount": 76
   }
 }
