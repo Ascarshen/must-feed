@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-20T17:26:22.985Z",
-  "localDate": "2026-07-20",
-  "checkedDinnerDate": "2026-07-19",
+  "updatedAt": "2026-07-21T17:07:36.269Z",
+  "localDate": "2026-07-21",
+  "checkedDinnerDate": "2026-07-20",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1004,6 +1004,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
+    },
+    "2026-07-20": {
+      "date": "2026-07-20",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-07-20",
+      "latestReplyBody": "dinner has been consumed. the recipient did not manage to burn down the kitchen, good news. PS: Metaphor: ReFantazio is a very good game.",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
     }
   },
   "imageByDate": {
@@ -1214,11 +1225,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 91,
-    "confirmedDays": 79,
-    "confirmedStreakDays": 9,
-    "lastConfirmedDate": "2026-07-19",
+    "totalTrackedDays": 92,
+    "confirmedDays": 80,
+    "confirmedStreakDays": 10,
+    "lastConfirmedDate": "2026-07-20",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 79
+    "targetReplyCount": 80
   }
 }
