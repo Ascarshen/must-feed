@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T16:49:07.809Z",
-  "localDate": "2026-07-25",
-  "checkedDinnerDate": "2026-07-24",
+  "updatedAt": "2026-07-26T16:50:46.445Z",
+  "localDate": "2026-07-26",
+  "checkedDinnerDate": "2026-07-25",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1059,6 +1059,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner has been consumed, indicating the user ate dinner on the localDate."
+    },
+    "2026-07-25": {
+      "date": "2026-07-25",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-07-25",
+      "latestReplyBody": "Thank you for your reminder, dinner has been consumed with friends :)",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The user explicitly says dinner has been consumed, indicating they ate dinner on the reminder date."
     }
   },
   "imageByDate": {
@@ -1279,11 +1290,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 96,
-    "confirmedDays": 82,
-    "confirmedStreakDays": 1,
-    "lastConfirmedDate": "2026-07-24",
+    "totalTrackedDays": 97,
+    "confirmedDays": 83,
+    "confirmedStreakDays": 2,
+    "lastConfirmedDate": "2026-07-25",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 82
+    "targetReplyCount": 83
   }
 }
