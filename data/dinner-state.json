@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-02T11:14:43.995Z",
-  "localDate": "2026-08-02",
-  "checkedDinnerDate": "2026-08-01",
+  "updatedAt": "2026-08-03T12:53:52.467Z",
+  "localDate": "2026-08-03",
+  "checkedDinnerDate": "2026-08-02",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1147,6 +1147,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "Reply says \"已进食\" (has eaten), confirming food intake on the localDate."
+    },
+    "2026-08-02": {
+      "date": "2026-08-02",
+      "status": "no_reply",
+      "confirmed": false,
+      "replyCount": 0,
+      "latestReplyDate": null,
+      "latestReplyBody": null,
+      "mealDescription": null,
+      "analysisSource": "none",
+      "analysisReason": "No target replies since the latest reminder."
     }
   },
   "imageByDate": {
@@ -1377,11 +1388,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 104,
+    "totalTrackedDays": 105,
     "confirmedDays": 88,
-    "confirmedStreakDays": 1,
+    "confirmedStreakDays": 0,
     "lastConfirmedDate": "2026-08-01",
-    "yesterdayConfirmed": true,
+    "yesterdayConfirmed": false,
     "targetReplyCount": 88
   }
 }
