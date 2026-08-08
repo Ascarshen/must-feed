@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-07T10:50:17.214Z",
-  "localDate": "2026-08-07",
-  "checkedDinnerDate": "2026-08-06",
+  "updatedAt": "2026-08-08T10:29:40.564Z",
+  "localDate": "2026-08-08",
+  "checkedDinnerDate": "2026-08-07",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1202,6 +1202,17 @@
       "mealDescription": "晚饭",
       "analysisSource": "ai",
       "analysisReason": "“晚饭吃过了”明确表示已经吃过晚饭。"
+    },
+    "2026-08-07": {
+      "date": "2026-08-07",
+      "status": "no_reply",
+      "confirmed": false,
+      "replyCount": 0,
+      "latestReplyDate": null,
+      "latestReplyBody": null,
+      "mealDescription": null,
+      "analysisSource": "none",
+      "analysisReason": "No target replies since the latest reminder."
     }
   },
   "imageByDate": {
@@ -1432,11 +1443,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 109,
+    "totalTrackedDays": 110,
     "confirmedDays": 91,
-    "confirmedStreakDays": 2,
+    "confirmedStreakDays": 0,
     "lastConfirmedDate": "2026-08-06",
-    "yesterdayConfirmed": true,
+    "yesterdayConfirmed": false,
     "targetReplyCount": 91
   }
 }
