@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-08T10:29:40.564Z",
-  "localDate": "2026-08-08",
-  "checkedDinnerDate": "2026-08-07",
+  "updatedAt": "2026-08-09T10:31:25.222Z",
+  "localDate": "2026-08-09",
+  "checkedDinnerDate": "2026-08-08",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1213,6 +1213,17 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-08-08": {
+      "date": "2026-08-08",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-08-08",
+      "latestReplyBody": "喵～晚饭吃过了～",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has already been eaten."
     }
   },
   "imageByDate": {
@@ -1443,11 +1454,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 110,
-    "confirmedDays": 91,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-08-06",
-    "yesterdayConfirmed": false,
-    "targetReplyCount": 91
+    "totalTrackedDays": 111,
+    "confirmedDays": 92,
+    "confirmedStreakDays": 1,
+    "lastConfirmedDate": "2026-08-08",
+    "yesterdayConfirmed": true,
+    "targetReplyCount": 92
   }
 }
