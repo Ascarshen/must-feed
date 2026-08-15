@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-14T10:57:03.842Z",
-  "localDate": "2026-08-14",
-  "checkedDinnerDate": "2026-08-13",
+  "updatedAt": "2026-08-15T10:19:12.755Z",
+  "localDate": "2026-08-15",
+  "checkedDinnerDate": "2026-08-14",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1279,6 +1279,17 @@
       "mealDescription": "晚饭",
       "analysisSource": "ai",
       "analysisReason": "回复明确说“晚饭吃过了”，表示已经吃了晚饭。"
+    },
+    "2026-08-14": {
+      "date": "2026-08-14",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-08-14",
+      "latestReplyBody": "Dear little bot, thanks a lot for your service. Dinner has been consumed meow (^w^) I may consider feeding you something you find tasty someday, as a reward.",
+      "mealDescription": "dinner (unspecified)",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says that dinner has been consumed."
     }
   },
   "imageByDate": {
@@ -1529,11 +1540,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 116,
-    "confirmedDays": 96,
-    "confirmedStreakDays": 2,
-    "lastConfirmedDate": "2026-08-13",
+    "totalTrackedDays": 117,
+    "confirmedDays": 97,
+    "confirmedStreakDays": 3,
+    "lastConfirmedDate": "2026-08-14",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 96
+    "targetReplyCount": 97
   }
 }
