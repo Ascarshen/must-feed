@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-16T10:21:26.844Z",
-  "localDate": "2026-08-16",
-  "checkedDinnerDate": "2026-08-15",
+  "updatedAt": "2026-08-17T10:29:11.332Z",
+  "localDate": "2026-08-17",
+  "checkedDinnerDate": "2026-08-16",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1301,6 +1301,17 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-08-16": {
+      "date": "2026-08-16",
+      "status": "no_reply",
+      "confirmed": false,
+      "replyCount": 0,
+      "latestReplyDate": null,
+      "latestReplyBody": null,
+      "mealDescription": null,
+      "analysisSource": "none",
+      "analysisReason": "No target replies since the latest reminder."
     }
   },
   "imageByDate": {
@@ -1556,7 +1567,7 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 118,
+    "totalTrackedDays": 119,
     "confirmedDays": 97,
     "confirmedStreakDays": 0,
     "lastConfirmedDate": "2026-08-14",
