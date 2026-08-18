@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-17T10:29:11.332Z",
-  "localDate": "2026-08-17",
-  "checkedDinnerDate": "2026-08-16",
+  "updatedAt": "2026-08-18T10:25:15.560Z",
+  "localDate": "2026-08-18",
+  "checkedDinnerDate": "2026-08-17",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1312,6 +1312,17 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-08-17": {
+      "date": "2026-08-17",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-08-18",
+      "latestReplyBody": "back to dk and dinner has been consumed :))",
+      "mealDescription": "dinner has been consumed",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed, which is direct evidence that the target ate dinner. The reply date is the day after the checked localDate, "
     }
   },
   "imageByDate": {
@@ -1567,11 +1578,11 @@
     }
   },
   "stats": {
-    "totalTrackedDays": 119,
-    "confirmedDays": 97,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-08-14",
-    "yesterdayConfirmed": false,
-    "targetReplyCount": 97
+    "totalTrackedDays": 120,
+    "confirmedDays": 98,
+    "confirmedStreakDays": 1,
+    "lastConfirmedDate": "2026-08-17",
+    "yesterdayConfirmed": true,
+    "targetReplyCount": 98
   }
 }
