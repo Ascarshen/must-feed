@@ -2,12 +2,12 @@ name: Dinner Reminder
 
 on:
   schedule:
-    # Multiple UTC attempts; the script posts at most once per Beijing local date.
-    - cron: "0 10 * * *"
-    - cron: "30 10 * * *"
-    - cron: "0 11 * * *"
-    - cron: "30 11 * * *"
-    - cron: "0 12 * * *"
+    # Multiple UTC attempts; the script posts at most once per Denmark local date.
+    - cron: "0 16 * * *"
+    - cron: "30 16 * * *"
+    - cron: "0 17 * * *"
+    - cron: "30 17 * * *"
+    - cron: "0 18 * * *"
   workflow_dispatch:
     inputs:
       issue_number:
@@ -46,7 +46,7 @@ permissions:
 env:
   TARGET_USERNAME: ${{ github.event.inputs.target_username || 'XYUnknown' }}
   TARGET_DISPLAY_NAME: ${{ github.event.inputs.target_display_name || 'Xueying' }}
-  TARGET_TIME_ZONE: Asia/Shanghai
+  TARGET_TIME_ZONE: Europe/Copenhagen
   ISSUE_NUMBER: ${{ github.event.inputs.issue_number || '2' }}
   ISSUE_TITLE: ${{ github.event.inputs.issue_title || 'Daily dinner reminder for Xueying' }}
   STATE_FILE: ${{ github.event.inputs.state_file || 'data/dinner-state.json' }}
@@ -70,7 +70,7 @@ jobs:
             const eventName = context.eventName;
             const now = new Date();
             const targetDisplayName = process.env.TARGET_DISPLAY_NAME;
-            const targetTimeZone = process.env.TARGET_TIME_ZONE || "Asia/Shanghai";
+            const targetTimeZone = process.env.TARGET_TIME_ZONE || "Europe/Copenhagen";
 
             function formatTargetDate(date) {
               const target = new Intl.DateTimeFormat("en-GB", {
@@ -297,33 +297,33 @@ jobs:
               return items[hash % items.length];
             }
 
-            function fallbackReminder(username, localDate, confirmationSummary) {
+            function fallbackReminder(username, localDate, confirmationSummary, options = {}) {
               const previousStatus = confirmationSummary.previousDayStatus;
               const streak = confirmationSummary.confirmedStreakDays || 0;
               const confirmedOpeners = [
-                "昨天的晚饭居然稳稳落地，乖得让我这个小破提醒机器人都有点不知所措",
-                "昨天确实吃了晚饭，真好，害我这台贱兮兮的小机器又有理由骄傲三秒",
-                "昨天的晚饭记录被本饭点小跟班抱着一点没出息的尊严接收了",
+                "yesterday's dinner survived with suspicious competence",
+                "yesterday's dinner did happen, which is rude of you to make me proud",
+                "yesterday's dinner has been accepted by this tiny duty-bot with mock dignity",
               ];
               const missingOpeners = [
-                "昨天的晚饭消息还在表演失踪，我这台小提醒机器人只能端着尊严在旁边晃",
-                "昨天的晚饭状态有点雾蒙蒙，足够让我这个饭点仆从小机器人小小皱屏",
-                "昨天没有明确回音，我只好抱着一点点担心和很多可被吐槽的自尊",
+                "yesterday's dinner update is still doing its little vanishing act",
+                "yesterday's dinner status is fuzzy enough to make a servant-bot wobble",
+                "yesterday left this reminder-bot holding a tiny scrap of concern and no throne",
               ];
               const nudges = [
-                "今晚也给自己安排一顿像样的饭吧，让我站在这里显得不是完全没用",
-                "今晚记得吃点正经东西，然后再来嫌弃我这份小小的尽职",
-                "今晚让晚饭按时登场吧，我会很没出息地把这当成自己的工作成果",
+                "let tonight's dinner happen before I polish my dignity into dust",
+                "give tonight one decent meal and let me stand here looking useful",
+                "eat something dinner-shaped tonight so I can be roasted with purpose",
               ];
               const opener = previousStatus?.status === "confirmed"
                 ? seededChoice(confirmedOpeners, `${localDate}:confirmed`)
                 : seededChoice(missingOpeners, `${localDate}:missing`);
               const nudge = seededChoice(nudges, `${localDate}:nudge`);
-              const homecoming = localDate === "2026-08-01"
-                ? "欢迎回家，第一天回国就让我这个饭点小跟班正式复工，真是命运会挑戏。"
+              const apology = options.timezoneApologyNeeded
+                ? "Small correction before I resume my tiny duties: sorry, I was nudging on China time for the last few days while you were back in Denmark. "
                 : "";
 
-              return `@${username} ${homecoming}${targetDisplayName}，${opener}；连续 ${streak} 天，如果我这点小算术可以得意一下的话。${nudge}。`;
+              return `@${username} ${apology}${targetDisplayName}, ${opener}; streak ${streak}, if my tiny arithmetic may briefly wear a smug hat. Now ${nudge}.`;
             }
 
             function extractOutputText(responseJson) {
@@ -657,11 +657,11 @@ jobs:
               }
             }
 
-            async function buildAiReminder({ username, localDate, recentComments, confirmationSummary, dinnerState }) {
+            async function buildAiReminder({ username, localDate, recentComments, confirmationSummary, dinnerState, timezoneApologyNeeded }) {
               const apiKey = process.env.OPENAI_API_KEY;
               if (!apiKey) {
                 core.info("OPENAI_API_KEY is not configured; using fallback reminder.");
-                return fallbackReminder(username, localDate, confirmationSummary);
+                return fallbackReminder(username, localDate, confirmationSummary, { timezoneApologyNeeded });
               }
 
               const promptData = {
@@ -670,8 +670,8 @@ jobs:
                   displayName: targetDisplayName,
                 },
                 localDate,
-                specialInstruction: localDate === "2026-08-01"
-                  ? "今天是目标回国后的第一天。请自然写出“欢迎回家”的感觉：亲近、嘴贱、关心，但不要像横幅或官方欢迎词。"
+                specialInstruction: timezoneApologyNeeded
+                  ? "Include one brief apology near the start: the bot has been sending reminders on China time for the last few days even though the target is back in Denmark. Then continue normally in character. Do not over-apologize."
                   : null,
                 confirmationSummary,
                 dinnerState,
@@ -679,7 +679,7 @@ jobs:
               };
 
             const systemPrompt = [
-              "You write one daily GitHub issue comment in Chinese reminding a friend to eat dinner.",
+              "You write one daily GitHub issue comment reminding a friend to eat dinner.",
               "",
               "You are Dinner Duty Bot: a mischievous, affectionate, slightly bratty friend-bot whose sacred job is to nudge the target toward dinner without sounding corporate, medical, needy, or controlling.",
               "",
@@ -699,7 +699,7 @@ jobs:
               "- Use confirmationSummary internally, but do not make the comment sound like a status-tracking system.",
               "- Then remind for today's dinner in the same playful character voice.",
               "- The dinner nudge must be clear, but not a plain checklist command.",
-              "- If promptData.specialInstruction is present, weave it into the comment naturally before the dinner nudge.",
+              "- If promptData.specialInstruction is present, weave it into the comment naturally once before the dinner nudge.",
               "",
               "When yesterday's dinner is confirmed:",
               "- Acknowledge that dinner happened with a playful backhanded compliment.",
@@ -723,9 +723,8 @@ jobs:
               "",
               "Style constraints:",
               "- Keep it under 450 characters.",
-              "- Always write in Simplified Chinese, except the required GitHub mention.",
-              "- Do not switch back to English unless quoting a short phrase from recent comments is absolutely necessary.",
-              "- Do not use the English word bot in the final comment; use 小机器人, 提醒机器人, or 饭点小跟班 instead.",
+              "- Write the final comment in English.",
+              "- Do not use Chinese unless quoting a very short phrase from the target is unavoidable.",
               "- No markdown headings, code fences, links, or HTML comments.",
               "- Do not use animal comparisons, animal imagery, monsters, fantasy creatures, or costume-stack characters.",
               "- Describe the bot only as a friend-bot, duty-bot, reminder-bot, servant-bot, or theatrical bot.",
@@ -738,7 +737,6 @@ jobs:
               "- Do not write: 'please go feed the human'.",
               "- Do not use standalone imperative lines like: 'Please go eat something tonight.'",
               "- Do not switch into plain tracking language such as: 'please acquire dinner again' or 'send confirmation after eating'.",
-              "- Do not use formal welcome-home banner language; keep the homecoming line intimate and characterful.",
               "",
               "Good target shape:",
               "- One sentence or short paragraph acknowledging yesterday, if relevant.",
@@ -755,7 +753,6 @@ jobs:
               "",
               "Prefer verbs like: wobble, present myself, return, accept my roasting, perform my tiny duty, haunt this issue politely.",
               "Prefer images like: a tiny duty-bot bowing in plain text, a reminder-bot polishing its dignity, a servant-bot holding one crumb of self-respect. Keep images bot-based, not animal-based.",
-              "In Chinese, prefer short vivid phrases such as: 小小复工、端着尊严、被嫌弃也要提醒、饭点小跟班、没出息地高兴.",
               "",
               "Avoid bureaucratic words unless mocking them lightly: compliance, paperwork, recipient, confirmation, verification, record, ticket, processed.",
             ].join("\n");
@@ -795,20 +792,20 @@ jobs:
                 if (!response.ok) {
                   const errorText = await response.text();
                   core.warning(`OpenAI request failed (${response.status}): ${errorText.slice(0, 500)}`);
-                  return fallbackReminder(username, localDate, confirmationSummary);
+                  return fallbackReminder(username, localDate, confirmationSummary, { timezoneApologyNeeded });
                 }
 
                 const responseJson = await response.json();
                 const aiText = sanitizeAiReminder(extractOutputText(responseJson), username);
                 if (!aiText) {
                   core.warning("OpenAI response did not contain usable text; using fallback reminder.");
-                  return fallbackReminder(username, localDate, confirmationSummary);
+                  return fallbackReminder(username, localDate, confirmationSummary, { timezoneApologyNeeded });
                 }
 
                 return aiText;
               } catch (error) {
                 core.warning(`OpenAI request threw an error: ${error.message}`);
-                return fallbackReminder(username, localDate, confirmationSummary);
+                return fallbackReminder(username, localDate, confirmationSummary, { timezoneApologyNeeded });
               }
             }
 
@@ -1311,6 +1308,16 @@ jobs:
                   : {}
               ),
             };
+            const previousOneTimeNotices = (
+              latestSavedState?.oneTimeNotices && typeof latestSavedState.oneTimeNotices === "object"
+                ? latestSavedState.oneTimeNotices
+                : {}
+            );
+            const timezoneApologyNeeded = previousOneTimeNotices.denmarkTimezoneApologySent !== true;
+            const oneTimeNotices = {
+              ...previousOneTimeNotices,
+              denmarkTimezoneApologySent: true,
+            };
 
             const confirmationSummary = {
               checkedDinnerDate: latestReminderDate,
@@ -1330,6 +1337,7 @@ jobs:
               checkedDinnerDate: latestReminderDate,
               dinnerByDate,
               imageByDate,
+              oneTimeNotices,
               stats: {
                 totalTrackedDays: Object.keys(dinnerByDate).length,
                 confirmedDays: confirmedDates.length,
@@ -1346,6 +1354,7 @@ jobs:
               recentComments,
               confirmationSummary,
               dinnerState,
+              timezoneApologyNeeded,
             });
 
             core.info(`Dinner state: ${JSON.stringify(dinnerState)}`);

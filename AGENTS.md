@@ -13,7 +13,7 @@ local-only designs can be discarded.
   as production data, not as a scratch file.
 - The workflow targets the stable GitHub issue configured by `ISSUE_NUMBER`.
   Do not switch back to title-based issue discovery unless explicitly requested.
-- The target local time zone is `Asia/Shanghai`; date logic should be
+- The target local time zone is `Europe/Copenhagen`; date logic should be
   evaluated in that time zone unless the code clearly says otherwise.
 
 ## Working Rules
@@ -101,3 +101,6 @@ should respect. Keep entries short and factual.
 - 2026-08-01: The target moved back to China. Scheduled reminders use
   `Asia/Shanghai`, comments should stay in Simplified Chinese, and the
   2026-08-01 reminder should include a natural welcome-home beat.
+- 2026-08-20: The target moved back to Denmark. Scheduled reminders use
+  `Europe/Copenhagen`, comments should default to English again, and the next
+  reminder should apologize once for the recent China-time reminders.
