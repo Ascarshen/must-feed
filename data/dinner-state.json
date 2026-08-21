@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-20T10:26:59.646Z",
-  "localDate": "2026-08-20",
-  "checkedDinnerDate": "2026-08-19",
+  "updatedAt": "2026-08-21T16:20:19.985Z",
+  "localDate": "2026-08-21",
+  "checkedDinnerDate": "2026-08-20",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1345,6 +1345,17 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-08-20": {
+      "date": "2026-08-20",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-08-20",
+      "latestReplyBody": "dinner has been consumed meow :))",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
     }
   },
   "imageByDate": {
@@ -1604,12 +1615,15 @@
       "generatedAt": "2026-08-18T10:25:15.560Z"
     }
   },
+  "oneTimeNotices": {
+    "denmarkTimezoneApologySent": true
+  },
   "stats": {
-    "totalTrackedDays": 122,
-    "confirmedDays": 98,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-08-17",
-    "yesterdayConfirmed": false,
-    "targetReplyCount": 98
+    "totalTrackedDays": 123,
+    "confirmedDays": 99,
+    "confirmedStreakDays": 1,
+    "lastConfirmedDate": "2026-08-20",
+    "yesterdayConfirmed": true,
+    "targetReplyCount": 99
   }
 }
