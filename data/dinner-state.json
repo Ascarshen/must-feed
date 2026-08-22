@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-21T16:20:19.985Z",
-  "localDate": "2026-08-21",
-  "checkedDinnerDate": "2026-08-20",
+  "updatedAt": "2026-08-22T16:11:39.302Z",
+  "localDate": "2026-08-22",
+  "checkedDinnerDate": "2026-08-21",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1356,6 +1356,17 @@
       "mealDescription": null,
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner has been consumed on the localDate."
+    },
+    "2026-08-21": {
+      "date": "2026-08-21",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-08-21",
+      "latestReplyBody": "glad that we are in the same time zone again :)) dinner has been consumed",
+      "mealDescription": "dinner",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says \"dinner has been consumed,\" which is clear confirmation that dinner was eaten today."
     }
   },
   "imageByDate": {
@@ -1619,11 +1630,11 @@
     "denmarkTimezoneApologySent": true
   },
   "stats": {
-    "totalTrackedDays": 123,
-    "confirmedDays": 99,
-    "confirmedStreakDays": 1,
-    "lastConfirmedDate": "2026-08-20",
+    "totalTrackedDays": 124,
+    "confirmedDays": 100,
+    "confirmedStreakDays": 2,
+    "lastConfirmedDate": "2026-08-21",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 99
+    "targetReplyCount": 100
   }
 }
