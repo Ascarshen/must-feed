@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-25T16:25:19.257Z",
-  "localDate": "2026-08-25",
-  "checkedDinnerDate": "2026-08-24",
+  "updatedAt": "2026-08-26T16:41:04.805Z",
+  "localDate": "2026-08-26",
+  "checkedDinnerDate": "2026-08-25",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1400,6 +1400,17 @@
       "mealDescription": "dinner has been consumed again",
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner has been consumed, which is concrete confirmation of eating."
+    },
+    "2026-08-25": {
+      "date": "2026-08-25",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-08-25",
+      "latestReplyBody": "Dinner has been consumed it has been a long day....",
+      "mealDescription": "dinner",
+      "analysisSource": "ai",
+      "analysisReason": "The reply explicitly says dinner has been consumed, which is concrete confirmation that they ate dinner."
     }
   },
   "imageByDate": {
@@ -1678,11 +1689,11 @@
     "denmarkTimezoneApologySent": true
   },
   "stats": {
-    "totalTrackedDays": 127,
-    "confirmedDays": 103,
-    "confirmedStreakDays": 5,
-    "lastConfirmedDate": "2026-08-24",
+    "totalTrackedDays": 128,
+    "confirmedDays": 104,
+    "confirmedStreakDays": 6,
+    "lastConfirmedDate": "2026-08-25",
     "yesterdayConfirmed": true,
-    "targetReplyCount": 103
+    "targetReplyCount": 104
   }
 }
