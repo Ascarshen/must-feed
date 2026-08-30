@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-29T00:14:49.522Z",
-  "localDate": "2026-08-29",
-  "checkedDinnerDate": "2026-08-28",
+  "updatedAt": "2026-08-30T18:55:01.944Z",
+  "localDate": "2026-08-30",
+  "checkedDinnerDate": "2026-08-29",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1433,6 +1433,17 @@
       "mealDescription": null,
       "analysisSource": "none",
       "analysisReason": "No target replies since the latest reminder."
+    },
+    "2026-08-29": {
+      "date": "2026-08-29",
+      "status": "confirmed",
+      "confirmed": true,
+      "replyCount": 1,
+      "latestReplyDate": "2026-08-29",
+      "latestReplyBody": "dinner has been consumed; tho I do wonder in which timezone you are presenting right now...",
+      "mealDescription": "dinner",
+      "analysisSource": "ai",
+      "analysisReason": "The reply says dinner has been consumed, which is direct confirmation of eating."
     }
   },
   "imageByDate": {
@@ -1726,11 +1737,11 @@
     "denmarkTimezoneApologySent": true
   },
   "stats": {
-    "totalTrackedDays": 130,
-    "confirmedDays": 104,
-    "confirmedStreakDays": 0,
-    "lastConfirmedDate": "2026-08-25",
-    "yesterdayConfirmed": false,
-    "targetReplyCount": 104
+    "totalTrackedDays": 131,
+    "confirmedDays": 105,
+    "confirmedStreakDays": 1,
+    "lastConfirmedDate": "2026-08-29",
+    "yesterdayConfirmed": true,
+    "targetReplyCount": 105
   }
 }
