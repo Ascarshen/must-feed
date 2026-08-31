@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-31T21:13:43.222Z",
-  "localDate": "2026-08-31",
-  "checkedDinnerDate": "2026-08-30",
+  "updatedAt": "2026-08-31T22:00:36.933Z",
+  "localDate": "2026-09-01",
+  "checkedDinnerDate": "2026-08-31",
   "dinnerByDate": {
     "2026-04-18": {
       "date": "2026-04-18",
@@ -1455,6 +1455,17 @@
       "mealDescription": "Dinner has been consumed.",
       "analysisSource": "ai",
       "analysisReason": "The reply explicitly says dinner has been consumed, which is concrete evidence that the user ate dinner."
+    },
+    "2026-08-31": {
+      "date": "2026-08-31",
+      "status": "unclear",
+      "confirmed": false,
+      "replyCount": 1,
+      "latestReplyDate": "2026-08-31",
+      "latestReplyBody": "Fed by workshop's organiser, the recipient is unfortunately in a good mood today and certainly does not mind your virtual presence in Cambridge. In fact, your appearance is somehow nice this way :))",
+      "mealDescription": null,
+      "analysisSource": "ai",
+      "analysisReason": "The reply is playful and mentions mood and presence, but gives no evidence that the person ate dinner, is eating, or skipped dinner."
     }
   },
   "imageByDate": {
@@ -1758,11 +1769,11 @@
     "denmarkTimezoneApologySent": true
   },
   "stats": {
-    "totalTrackedDays": 132,
+    "totalTrackedDays": 133,
     "confirmedDays": 106,
-    "confirmedStreakDays": 2,
+    "confirmedStreakDays": 0,
     "lastConfirmedDate": "2026-08-30",
-    "yesterdayConfirmed": true,
-    "targetReplyCount": 106
+    "yesterdayConfirmed": false,
+    "targetReplyCount": 107
   }
 }
