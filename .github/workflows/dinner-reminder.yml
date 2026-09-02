@@ -2,12 +2,9 @@ name: Dinner Reminder
 
 on:
   schedule:
-    # Multiple UTC attempts; the script posts at most once per Denmark local date.
-    - cron: "0 16 * * *"
-    - cron: "30 16 * * *"
-    - cron: "0 17 * * *"
-    - cron: "30 17 * * *"
-    - cron: "0 18 * * *"
+    # Multiple Denmark-local evening attempts; the script posts at most once per local date.
+    - cron: "5,20,35,50 18-22 * * *"
+      timezone: "Europe/Copenhagen"
   workflow_dispatch:
     inputs:
       issue_number:
@@ -1130,6 +1127,16 @@ jobs:
 
             const localTime = formatTargetDate(now);
             const localDate = localTime.date;
+
+            if (eventName === "schedule" && localTime.hour < 18) {
+              core.info(`Too early in ${targetTimeZone}: ${localTime.hour}:${localTime.minute}; skipping.`);
+              return;
+            }
+
+            if (eventName === "schedule" && localTime.hour >= 23) {
+              core.info(`Too late in ${targetTimeZone}: ${localTime.hour}:${localTime.minute}; skipping.`);
+              return;
+            }
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
