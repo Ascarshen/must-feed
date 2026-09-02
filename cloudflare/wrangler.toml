@@ -1,6 +1,8 @@
 name = "must-feed-dinner-scheduler"
 main = "dinner-scheduler-worker.js"
 compatibility_date = "2026-09-02"
+workers_dev = false
+preview_urls = false
 
 # Cloudflare cron triggers are UTC. Denmark 18:00 is 16:00 UTC in summer
 # and 17:00 UTC in winter, so the worker wakes during both possible UTC hours
