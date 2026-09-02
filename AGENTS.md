@@ -104,3 +104,7 @@ should respect. Keep entries short and factual.
 - 2026-08-20: The target moved back to Denmark. Scheduled reminders use
   `Europe/Copenhagen`, comments should default to English again, and the next
   reminder should apologize once for the recent China-time reminders.
+- 2026-09-02: A Cloudflare Worker in `cloudflare/` can trigger the reminder via
+  `workflow_dispatch`. External dispatches must keep the workflow time-window
+  guard enabled; only explicit manual tests should set `bypass_time_window` to
+  `true`.

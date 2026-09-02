@@ -31,6 +31,10 @@ on:
         description: Repository directory for generated images
         required: false
         default: generated/dinner-duty-bot
+      bypass_time_window:
+        description: Allow manual test runs outside the Denmark 18:00-18:59 window
+        required: false
+        default: "false"
 
 concurrency:
   group: dinner-reminder
@@ -68,6 +72,7 @@ jobs:
             const now = new Date();
             const targetDisplayName = process.env.TARGET_DISPLAY_NAME;
             const targetTimeZone = process.env.TARGET_TIME_ZONE || "Europe/Copenhagen";
+            const bypassTimeWindow = context.payload.inputs?.bypass_time_window === "true";
 
             function formatTargetDate(date) {
               const target = new Intl.DateTimeFormat("en-GB", {
@@ -1128,12 +1133,12 @@ jobs:
             const localTime = formatTargetDate(now);
             const localDate = localTime.date;
 
-            if (eventName === "schedule" && localTime.hour < 18) {
+            if (!bypassTimeWindow && localTime.hour < 18) {
               core.info(`Too early in ${targetTimeZone}: ${localTime.hour}:${localTime.minute}; skipping.`);
               return;
             }
 
-            if (eventName === "schedule" && localTime.hour >= 19) {
+            if (!bypassTimeWindow && localTime.hour >= 19) {
               core.info(`Outside accepted dinner window in ${targetTimeZone}: ${localTime.hour}:${localTime.minute}; skipping.`);
               return;
             }

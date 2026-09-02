@@ -1,0 +1,15 @@
+name = "must-feed-dinner-scheduler"
+main = "dinner-scheduler-worker.js"
+compatibility_date = "2026-09-02"
+
+# Cloudflare cron triggers are UTC. Denmark 18:00 is 16:00 UTC in summer
+# and 17:00 UTC in winter, so the worker wakes during both possible UTC hours
+# and dispatches only when Europe/Copenhagen is actually 18:00-18:59.
+[triggers]
+crons = ["*/5 16-17 * * *"]
+
+[vars]
+GITHUB_OWNER = "Ascarshen"
+GITHUB_REPO = "must-feed"
+GITHUB_WORKFLOW_ID = "dinner-reminder.yml"
+GITHUB_REF = "main"
