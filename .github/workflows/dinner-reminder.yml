@@ -2,8 +2,8 @@ name: Dinner Reminder
 
 on:
   schedule:
-    # Multiple Denmark-local evening attempts; the script posts at most once per local date.
-    - cron: "5,20,35,50 18-22 * * *"
+    # Denmark-local attempts during the accepted 18:00-18:59 dinner window.
+    - cron: "*/5 18 * * *"
       timezone: "Europe/Copenhagen"
   workflow_dispatch:
     inputs:
@@ -1133,8 +1133,8 @@ jobs:
               return;
             }
 
-            if (eventName === "schedule" && localTime.hour >= 23) {
-              core.info(`Too late in ${targetTimeZone}: ${localTime.hour}:${localTime.minute}; skipping.`);
+            if (eventName === "schedule" && localTime.hour >= 19) {
+              core.info(`Outside accepted dinner window in ${targetTimeZone}: ${localTime.hour}:${localTime.minute}; skipping.`);
               return;
             }
 
