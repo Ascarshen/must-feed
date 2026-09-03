@@ -37,13 +37,13 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-export async function dispatchDinnerReminder(env, now) {
+export async function dispatchDinnerReminder(env, now, options = {}) {
   if (!env.GITHUB_TOKEN) {
     throw new Error("GITHUB_TOKEN secret is not configured.");
   }
 
   const localTime = getTargetTime(now);
-  if (localTime.hour !== 18) {
+  if (!options.force && localTime.hour !== 18) {
     return {
       dispatched: false,
       reason: `Outside ${TARGET_TIME_ZONE} dinner hour.`,
@@ -64,7 +64,7 @@ export async function dispatchDinnerReminder(env, now) {
       authorization: `Bearer ${env.GITHUB_TOKEN}`,
       "content-type": "application/json",
       "user-agent": "must-feed-cloudflare-scheduler",
-      "x-github-api-version": "2026-03-10",
+      "x-github-api-version": "2022-11-28",
     },
     body: JSON.stringify({
       ref,
@@ -116,7 +116,9 @@ export default {
       return jsonResponse({ ok: false, error: "Unauthorized." }, 401);
     }
 
-    const result = await dispatchDinnerReminder(env, new Date());
+    const result = await dispatchDinnerReminder(env, new Date(), {
+      force: url.searchParams.get("force") === "1",
+    });
     return jsonResponse(result);
   },
 };
