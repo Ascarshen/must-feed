@@ -32,8 +32,9 @@ Deploy:
 npx wrangler deploy --config cloudflare/wrangler.toml
 ```
 
-The GitHub workflow still has its own time-window guard, so delayed dispatches
-outside the dinner hour are skipped.
+The GitHub workflow no longer has its own hard time-window skip, because delayed
+GitHub schedule runs were skipping the daily reminder. The Worker remains
+responsible for dispatching only during the Copenhagen dinner hour.
 
 ## Manual Check
 
@@ -52,6 +53,6 @@ curl -H "Authorization: Bearer $SCHEDULER_TOKEN" \
   "https://must-feed-dinner-scheduler.ascarshen.workers.dev/dispatch?force=1"
 ```
 
-The Worker will trigger `workflow_dispatch`, but it still sends
-`bypass_time_window: "false"`, so the GitHub workflow should skip outside
-`18:00-18:59` Copenhagen time.
+The Worker will trigger `workflow_dispatch`. Use this only for a controlled
+connectivity check, because the workflow may post if today's reminder has not
+already been posted.

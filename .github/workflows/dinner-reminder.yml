@@ -2,9 +2,9 @@ name: Dinner Reminder
 
 on:
   schedule:
-    # Denmark-local attempts during the accepted 18:00-18:59 dinner window.
-    - cron: "*/5 18 * * *"
-      timezone: "Europe/Copenhagen"
+    # 18:00 in Denmark during CEST and CET respectively.
+    - cron: "0 16 * * *"
+    - cron: "0 17 * * *"
   workflow_dispatch:
     inputs:
       issue_number:
@@ -32,7 +32,7 @@ on:
         required: false
         default: generated/dinner-duty-bot
       bypass_time_window:
-        description: Allow manual test runs outside the Denmark 18:00-18:59 window
+        description: Deprecated compatibility input; the workflow no longer skips delayed runs
         required: false
         default: "false"
 
@@ -72,7 +72,6 @@ jobs:
             const now = new Date();
             const targetDisplayName = process.env.TARGET_DISPLAY_NAME;
             const targetTimeZone = process.env.TARGET_TIME_ZONE || "Europe/Copenhagen";
-            const bypassTimeWindow = context.payload.inputs?.bypass_time_window === "true";
 
             function formatTargetDate(date) {
               const target = new Intl.DateTimeFormat("en-GB", {
@@ -1132,16 +1131,6 @@ jobs:
 
             const localTime = formatTargetDate(now);
             const localDate = localTime.date;
-
-            if (!bypassTimeWindow && localTime.hour < 18) {
-              core.info(`Too early in ${targetTimeZone}: ${localTime.hour}:${localTime.minute}; skipping.`);
-              return;
-            }
-
-            if (!bypassTimeWindow && localTime.hour >= 19) {
-              core.info(`Outside accepted dinner window in ${targetTimeZone}: ${localTime.hour}:${localTime.minute}; skipping.`);
-              return;
-            }
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;

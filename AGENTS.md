@@ -105,6 +105,8 @@ should respect. Keep entries short and factual.
   `Europe/Copenhagen`, comments should default to English again, and the next
   reminder should apologize once for the recent China-time reminders.
 - 2026-09-02: A Cloudflare Worker in `cloudflare/` can trigger the reminder via
-  `workflow_dispatch`. External dispatches must keep the workflow time-window
-  guard enabled; only explicit manual tests should set `bypass_time_window` to
-  `true`.
+  `workflow_dispatch`.
+- 2026-09-04: The workflow reverted to two fixed UTC schedules (`16:00` and
+  `17:00`) for Denmark summer/winter dinner time and no longer enforces a hard
+  workflow time-window skip, because delayed GitHub schedule runs were skipping
+  the daily reminder.
