@@ -1,10 +1,6 @@
 name: Dinner Reminder
 
 on:
-  schedule:
-    # 18:00 in Denmark during CEST and CET respectively.
-    - cron: "0 16 * * *"
-    - cron: "0 17 * * *"
   workflow_dispatch:
     inputs:
       issue_number:

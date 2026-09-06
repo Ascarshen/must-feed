@@ -110,3 +110,5 @@ should respect. Keep entries short and factual.
   `17:00`) for Denmark summer/winter dinner time and no longer enforces a hard
   workflow time-window skip, because delayed GitHub schedule runs were skipping
   the daily reminder.
+- 2026-09-06: Automatic scheduled reminders are paused. The workflow keeps
+  `workflow_dispatch` only, so it can still be run manually for tests.
